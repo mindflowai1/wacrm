@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { decrypt, encrypt, isLegacyFormat } from '@/lib/whatsapp/encryption'
 import { getMediaUrl, downloadMedia } from '@/lib/whatsapp/meta-api'
@@ -183,8 +183,17 @@ export async function POST(request: Request) {
   }
 
   // Process asynchronously so we can ack Meta within their timeout.
-  processWebhook(body).catch((error) => {
-    console.error('Error processing webhook:', error)
+  // `after()` schedules the work to run AFTER the 200 response is sent
+  // while guaranteeing it still completes — on serverless (Vercel) a
+  // bare fire-and-forget promise would be frozen/killed once the
+  // response returns, dropping the inbound message. `after` keeps the
+  // function alive until processWebhook settles.
+  after(async () => {
+    try {
+      await processWebhook(body)
+    } catch (error) {
+      console.error('Error processing webhook:', error)
+    }
   })
 
   return NextResponse.json({ status: 'received' }, { status: 200 })
