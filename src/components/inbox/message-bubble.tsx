@@ -13,6 +13,7 @@ import {
   LayoutTemplate,
   ImageOff,
   CornerDownLeft,
+  Bot,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ReplyQuote } from "./reply-quote";
@@ -249,6 +250,10 @@ export function MessageBubble({
   onToggleReaction,
 }: MessageBubbleProps) {
   const isAgent = message.sender_type === "agent" || message.sender_type === "bot";
+  // Distinguish AI replies from human-agent replies — both are outbound
+  // (right-aligned, primary fill) but the "IA" tag tells them apart at a
+  // glance. Untagged outbound bubbles are from a human.
+  const isBot = message.sender_type === "bot";
   const time = format(new Date(message.created_at), "HH:mm");
 
   // Row alignment + width cap are owned by <MessageActions> so its hover
@@ -282,6 +287,12 @@ export function MessageBubble({
             isAgent ? "justify-end" : "justify-start",
           )}
         >
+          {isBot && (
+            <span className="inline-flex items-center gap-0.5 rounded bg-primary-foreground/20 px-1 py-px text-[9px] font-semibold uppercase leading-none tracking-wide text-primary-foreground">
+              <Bot className="h-2.5 w-2.5" />
+              IA
+            </span>
+          )}
           <span
             className={cn(
               "text-[10px]",
