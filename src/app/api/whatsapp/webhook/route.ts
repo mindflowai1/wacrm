@@ -750,13 +750,12 @@ async function processMessage(
   // /api/integrations/agent-reply so it lands in the inbox too.
   // ============================================================
   if (aiAgentEnabled && !flowConsumed) {
-    // Human handoff: if a human agent has replied in this conversation
-    // recently, stay silent so the AI doesn't talk over them. The
-    // window resets on each human message and auto-resumes the AI once
-    // the agent goes quiet — see humanRecentlyActive.
-    if (await humanRecentlyActive(conversation.id)) {
+    // Human handoff: once a human agent has taken over this lead, the AI
+    // stays out for good — see humanHasTakenOver. The default is a
+    // permanent handoff (the lead is the human's from first contact on).
+    if (await humanHasTakenOver(conversation.id)) {
       console.log(
-        '[ai-agent] handoff active — human is handling, skipping forward for',
+        '[ai-agent] handoff active — human has taken over this lead, skipping forward for',
         conversation.id,
       )
     } else {
@@ -781,31 +780,43 @@ async function processMessage(
 }
 
 /**
- * Human-handoff gate. Returns true when a human agent has sent a
- * message in this conversation within the cooldown window — i.e. a
- * person has taken over, so the AI should stay quiet and not talk over
- * them. The window resets on every human message, so the AI only
- * auto-resumes after the agent has been silent for the full cooldown.
+ * Human-handoff gate. Returns true when a human agent has taken over
+ * the conversation, so the AI must stay out.
  *
- * Only `agent` messages count — the bot's own `bot` replies are
- * ignored (otherwise the AI would mute itself the moment it answered).
+ * Default (AI_HANDOFF_COOLDOWN_MINUTES unset) = PERMANENT handoff: if a
+ * human agent has EVER replied in this conversation, the AI never
+ * engages again — the lead belongs to the human from first contact on.
  *
- * Cooldown is AI_HANDOFF_COOLDOWN_MINUTES (default 60). Setting it to 0
- * or a non-number disables the gate (AI always responds). Fails open on
- * a query error: a transient DB hiccup shouldn't silence the bot, and
+ * Optional rolling window: set AI_HANDOFF_COOLDOWN_MINUTES to a positive
+ * number to instead pause the AI only while a human replied within that
+ * many minutes (auto-resumes after the agent goes quiet). Set it to 0 to
+ * disable the handoff entirely (AI always responds).
+ *
+ * Only `agent` messages count — the bot's own `bot` replies are ignored
+ * (otherwise the AI would mute itself the moment it answered). Fails open
+ * on a query error: a transient DB hiccup shouldn't silence the bot, and
  * the message INSERT just above would have failed first anyway.
  */
-async function humanRecentlyActive(conversationId: string): Promise<boolean> {
+async function humanHasTakenOver(conversationId: string): Promise<boolean> {
   const raw = process.env.AI_HANDOFF_COOLDOWN_MINUTES
-  const minutes = raw === undefined ? 60 : Number(raw)
-  if (!Number.isFinite(minutes) || minutes <= 0) return false
-  const since = new Date(Date.now() - minutes * 60_000).toISOString()
-  const { count, error } = await supabaseAdmin()
+  const minutes = raw === undefined ? null : Number(raw)
+
+  // Explicit 0 disables the handoff.
+  if (minutes === 0) return false
+
+  let query = supabaseAdmin()
     .from('messages')
     .select('id', { count: 'exact', head: true })
     .eq('conversation_id', conversationId)
     .eq('sender_type', 'agent')
-    .gt('created_at', since)
+
+  // A positive number switches from permanent to a rolling time window.
+  if (minutes !== null && Number.isFinite(minutes) && minutes > 0) {
+    const since = new Date(Date.now() - minutes * 60_000).toISOString()
+    query = query.gt('created_at', since)
+  }
+
+  const { count, error } = await query
   if (error) {
     console.error('[ai-agent] handoff check failed:', error.message)
     return false
