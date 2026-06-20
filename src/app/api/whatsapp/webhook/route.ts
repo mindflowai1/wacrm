@@ -750,23 +750,67 @@ async function processMessage(
   // /api/integrations/agent-reply so it lands in the inbox too.
   // ============================================================
   if (aiAgentEnabled && !flowConsumed) {
-    await forwardToAiAgent({
-      accountId,
-      conversationId: conversation.id,
-      contact: {
-        id: contactRecord.id,
-        name: contactName,
-        phone: senderPhone,
-      },
-      message: {
-        type: message.type,
-        text: inboundText,
-        reply_id: interactiveReplyId,
-        meta_message_id: message.id,
-      },
-      is_first_inbound: isFirstInboundMessage,
-    })
+    // Human handoff: if a human agent has replied in this conversation
+    // recently, stay silent so the AI doesn't talk over them. The
+    // window resets on each human message and auto-resumes the AI once
+    // the agent goes quiet — see humanRecentlyActive.
+    if (await humanRecentlyActive(conversation.id)) {
+      console.log(
+        '[ai-agent] handoff active — human is handling, skipping forward for',
+        conversation.id,
+      )
+    } else {
+      await forwardToAiAgent({
+        accountId,
+        conversationId: conversation.id,
+        contact: {
+          id: contactRecord.id,
+          name: contactName,
+          phone: senderPhone,
+        },
+        message: {
+          type: message.type,
+          text: inboundText,
+          reply_id: interactiveReplyId,
+          meta_message_id: message.id,
+        },
+        is_first_inbound: isFirstInboundMessage,
+      })
+    }
   }
+}
+
+/**
+ * Human-handoff gate. Returns true when a human agent has sent a
+ * message in this conversation within the cooldown window — i.e. a
+ * person has taken over, so the AI should stay quiet and not talk over
+ * them. The window resets on every human message, so the AI only
+ * auto-resumes after the agent has been silent for the full cooldown.
+ *
+ * Only `agent` messages count — the bot's own `bot` replies are
+ * ignored (otherwise the AI would mute itself the moment it answered).
+ *
+ * Cooldown is AI_HANDOFF_COOLDOWN_MINUTES (default 60). Setting it to 0
+ * or a non-number disables the gate (AI always responds). Fails open on
+ * a query error: a transient DB hiccup shouldn't silence the bot, and
+ * the message INSERT just above would have failed first anyway.
+ */
+async function humanRecentlyActive(conversationId: string): Promise<boolean> {
+  const raw = process.env.AI_HANDOFF_COOLDOWN_MINUTES
+  const minutes = raw === undefined ? 60 : Number(raw)
+  if (!Number.isFinite(minutes) || minutes <= 0) return false
+  const since = new Date(Date.now() - minutes * 60_000).toISOString()
+  const { count, error } = await supabaseAdmin()
+    .from('messages')
+    .select('id', { count: 'exact', head: true })
+    .eq('conversation_id', conversationId)
+    .eq('sender_type', 'agent')
+    .gt('created_at', since)
+  if (error) {
+    console.error('[ai-agent] handoff check failed:', error.message)
+    return false
+  }
+  return (count ?? 0) > 0
 }
 
 /**
