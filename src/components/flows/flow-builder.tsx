@@ -169,8 +169,8 @@ export function FlowBuilder() {
 
         {state.nodes.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border bg-card/50 p-8 text-center text-sm text-muted-foreground">
-            Add a <strong>Start</strong> node, then a <strong>Send buttons</strong>
-            {" "}node, then a <strong>Handoff</strong> — that&apos;s the welcome-menu
+            Add a <strong>Start</strong> node, then a <strong>Enviar botões</strong>
+            {" "}node, then a <strong>Transferência</strong> — that&apos;s the welcome-menu
             shape from the brief.
           </div>
         ) : (
@@ -266,7 +266,7 @@ function TriggerPanel({
 }) {
   return (
     <section className="rounded-lg border border-border bg-card p-4">
-      <h2 className="mb-3 text-sm font-semibold text-foreground">Trigger</h2>
+      <h2 className="mb-3 text-sm font-semibold text-foreground">Gatilho</h2>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
           <label className="mb-1 block text-xs text-muted-foreground">When…</label>
@@ -286,13 +286,13 @@ function TriggerPanel({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="keyword">
-                A message contains a keyword
+                Uma mensagem contém uma palavra-chave
               </SelectItem>
               <SelectItem value="first_inbound_message">
                 Customer&apos;s first ever inbound message
               </SelectItem>
               <SelectItem value="manual">
-                Manual only (no auto-trigger)
+                Apenas manual (sem disparo automático)
               </SelectItem>
             </SelectContent>
           </Select>
@@ -300,7 +300,7 @@ function TriggerPanel({
         {state.trigger_type === "keyword" && (
           <div>
             <label className="mb-1 block text-xs text-muted-foreground">
-              Keywords (comma-separated)
+              Palavras-chave (separadas por vírgula)
             </label>
             <KeywordsInput
               keywords={
@@ -351,7 +351,7 @@ function EntryPicker({
         onChange={(key) =>
           setState((s) => ({ ...s, entry_node_id: key }))
         }
-        placeholder="Pick the first node…"
+        placeholder="Escolha o primeiro nó…"
         className="flex-1 max-w-xs"
       />
     </section>
@@ -456,7 +456,7 @@ function NodeCard({
             <div className="flex items-center gap-2">
               {!isEntry && (
                 <Button variant="ghost" size="sm" onClick={onSetEntry}>
-                  Set as entry
+                  Definir como entrada
                 </Button>
               )}
             </div>
@@ -467,7 +467,7 @@ function NodeCard({
               className="text-red-400 hover:bg-red-500/10 hover:text-red-300"
             >
               <Trash2 className="h-3.5 w-3.5" />
-              Remove node
+              Remover nó
             </Button>
           </div>
           {issues.length > 0 && (
@@ -528,7 +528,7 @@ function NodeConfigWithAdvanced({
           <div className="mt-3 flex flex-col gap-3">
             <div>
               <label className="mb-1 block text-xs text-muted-foreground">
-                Node key (internal identifier — keep stable for analytics)
+                Chave do nó (identificador interno — mantenha estável para análises)
               </label>
               <Input
                 value={node.node_key}
@@ -574,10 +574,10 @@ function AddNodeButton({ onAdd }: { onAdd: (type: NodeType) => void }) {
     <DropdownMenu>
       <DropdownMenuTrigger
         className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-        aria-label="Add node"
+        aria-label="Adicionar nó"
       >
         <Plus className="h-3.5 w-3.5" />
-        Add node
+        Adicionar nó
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="border-border bg-popover">
         {types.map((t) => {

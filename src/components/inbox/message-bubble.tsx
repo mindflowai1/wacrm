@@ -129,7 +129,7 @@ function MessageContent({ message }: { message: Message }) {
       return (
         <div>
           {message.media_url ? (
-            <MediaImage url={message.media_url} alt="Shared image" />
+            <MediaImage url={message.media_url} alt="Imagem compartilhada" />
           ) : (
             <MediaUnavailable label="Image" />
           )}
@@ -223,7 +223,7 @@ function MessageContent({ message }: { message: Message }) {
         <div className="flex flex-col gap-0.5">
           <span className="inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
             <CornerDownLeft className="h-3 w-3" />
-            Button reply
+            Resposta de botão
           </span>
           <p className="whitespace-pre-wrap break-words text-sm">
             {message.content_text || "[Interactive reply]"}

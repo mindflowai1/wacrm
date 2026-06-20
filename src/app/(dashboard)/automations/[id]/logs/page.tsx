@@ -67,7 +67,7 @@ export default function AutomationLogsPage({
       <div className="flex h-64 flex-col items-center justify-center gap-3">
         <p className="text-sm text-red-400">{error}</p>
         <Button variant="outline" onClick={() => router.push("/automations")}>
-          Back
+          Voltar
         </Button>
       </div>
     )
@@ -94,15 +94,15 @@ export default function AutomationLogsPage({
         </button>
         <div>
           <h1 className="text-2xl font-bold text-foreground">{automation.name}</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">Execution logs</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">Logs de execução</p>
         </div>
       </div>
 
       {logs.length === 0 ? (
         <div className="flex h-48 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/40">
-          <p className="text-sm text-foreground">No executions yet</p>
+          <p className="text-sm text-foreground">Nenhuma execução ainda</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Trigger this automation to see runs here.
+            Dispare esta automação para ver as execuções aqui.
           </p>
         </div>
       ) : (
@@ -150,7 +150,7 @@ export default function AutomationLogsPage({
                         <StepRow key={i} result={r} />
                       ))}
                       {(log.steps_executed ?? []).length === 0 && (
-                        <li className="text-xs text-muted-foreground">No steps recorded.</li>
+                        <li className="text-xs text-muted-foreground">Nenhum passo registrado.</li>
                       )}
                     </ul>
                   </div>

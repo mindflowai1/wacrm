@@ -76,7 +76,7 @@ export const NODE_META: Record<
     color: "text-sky-400",
   },
   send_buttons: {
-    label: "Send buttons",
+    label: "Enviar botões",
     icon: ListChecks,
     color: "text-primary",
   },

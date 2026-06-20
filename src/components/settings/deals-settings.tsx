@@ -56,7 +56,7 @@ export function DealsSettings() {
       .update({ default_currency: selected })
       .eq("id", accountId);
     if (error) {
-      toast.error("Failed to save default currency");
+      toast.error("Falha ao salvar a moeda padrão");
       setSaving(false);
       return;
     }
@@ -64,20 +64,20 @@ export function DealsSettings() {
     // and every total pick it up without a full reload.
     await refreshProfile();
     setSaving(false);
-    toast.success("Default currency updated");
+    toast.success("Moeda padrão atualizada");
   }
 
   return (
     <section className="max-w-2xl animate-in fade-in-50 duration-200">
       <SettingsPanelHead
         title="Deals & currency"
-        description="The currency used for new deals and for pipeline and dashboard totals."
+        description="A moeda usada em novos negócios e nos totais do funil e do painel."
       />
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Coins className="size-4 text-primary" />
-            Default currency
+            Moeda padrão
           </CardTitle>
           <CardDescription className="text-muted-foreground">
             New deals default to this currency, and pipeline and
@@ -102,7 +102,7 @@ export function DealsSettings() {
             </select>
             {!canEditSettings && (
               <p className="text-xs text-muted-foreground">
-                Only account admins can change the default currency.
+                Apenas administradores da conta podem mudar a moeda padrão.
               </p>
             )}
           </div>
@@ -116,7 +116,7 @@ export function DealsSettings() {
               {saving ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Saving...
+                  Salvando...
                 </>
               ) : (
                 "Save"

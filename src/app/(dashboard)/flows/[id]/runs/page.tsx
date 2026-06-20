@@ -158,7 +158,7 @@ export default function FlowRunsPage() {
   if (notFound || !flow) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3">
-        <p className="text-sm text-muted-foreground">Flow not found.</p>
+        <p className="text-sm text-muted-foreground">Fluxo não encontrado.</p>
         <button
           type="button"
           onClick={() => router.push("/flows")}
@@ -180,7 +180,7 @@ export default function FlowRunsPage() {
         <ArrowLeft className="h-3 w-3" />
         {flow.name}
       </button>
-      <h1 className="text-xl font-semibold text-foreground">Runs</h1>
+      <h1 className="text-xl font-semibold text-foreground">Execuções</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         The 50 most recent times this flow ran. Expand a row to see the engine&apos;s
         per-step log.
@@ -279,7 +279,7 @@ function RunCard({
           <div className="flex flex-col gap-1">
             {events.length === 0 ? (
               <p className="text-xs text-muted-foreground">
-                No events recorded for this run.
+                Nenhum evento registrado nesta execução.
               </p>
             ) : (
               events.map((ev, ix) => <EventLine key={ix} ev={ev} />)

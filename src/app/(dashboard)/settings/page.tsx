@@ -65,7 +65,7 @@ export default function SettingsPage() {
     <div>
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Settings
+          Configurações
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Everything in one place — your account and your workspace. Pick a
