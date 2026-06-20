@@ -270,6 +270,17 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
 
       const decryptedAccessToken = decrypt(config.access_token)
 
+      // AI customer-service master switch (migration 024). Read once per
+      // delivery — every message in this batch shares the same account.
+      // Gates the n8n forward in processMessage; when off (default) the
+      // inbound stays inbox-only.
+      const { data: acctRow } = await supabaseAdmin()
+        .from('accounts')
+        .select('ai_agent_enabled')
+        .eq('id', config.account_id)
+        .maybeSingle()
+      const aiAgentEnabled = acctRow?.ai_agent_enabled === true
+
       for (let i = 0; i < value.messages.length; i++) {
         const message = value.messages[i]
         const contact = value.contacts[i] || value.contacts[0]
@@ -284,7 +295,8 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
           // inserts that need it for NOT NULL FK compliance. Always
           // the admin who saved the WhatsApp config.
           config.user_id,
-          decryptedAccessToken
+          decryptedAccessToken,
+          aiAgentEnabled
         )
       }
     }
@@ -518,7 +530,11 @@ async function processMessage(
   // (contacts, conversations). Always the admin who saved the
   // WhatsApp config; the choice is arbitrary post-017 but stable.
   configOwnerUserId: string,
-  accessToken: string
+  accessToken: string,
+  // Account-level AI master switch (migration 024). When true AND
+  // AI_AGENT_WEBHOOK_URL is set, the inbound is forwarded to the n8n
+  // agent after it lands in the inbox. Resolved once per delivery.
+  aiAgentEnabled: boolean
 ) {
   const senderPhone = normalizePhone(message.from)
   const contactName = contact.profile.name
@@ -721,6 +737,81 @@ async function processMessage(
         conversation_id: conversation.id,
       },
     }).catch((err) => console.error('[automations] dispatch failed:', err))
+  }
+
+  // ============================================================
+  // AI agent forward (Phase 2).
+  //
+  // Once the message is safely in the inbox, hand it to the external
+  // AI agent (n8n) for an automated reply — but only when the
+  // account's master switch is on AND a flow didn't already consume
+  // the message (a scripted flow is the active responder; forwarding
+  // would double up). The actual reply comes back through
+  // /api/integrations/agent-reply so it lands in the inbox too.
+  // ============================================================
+  if (aiAgentEnabled && !flowConsumed) {
+    await forwardToAiAgent({
+      accountId,
+      conversationId: conversation.id,
+      contact: {
+        id: contactRecord.id,
+        name: contactName,
+        phone: senderPhone,
+      },
+      message: {
+        type: message.type,
+        text: inboundText,
+        reply_id: interactiveReplyId,
+        meta_message_id: message.id,
+      },
+      is_first_inbound: isFirstInboundMessage,
+    })
+  }
+}
+
+/**
+ * Forward an inbound message to the external AI agent (n8n) so it can
+ * craft an automated reply. Gated by the per-account master switch
+ * (checked by the caller) and the AI_AGENT_WEBHOOK_URL env. Best-effort:
+ * a missing URL is a no-op, and any network error is logged, never
+ * thrown — the inbox write already succeeded and must not be undone by
+ * a flaky downstream. Runs inside `after()`, so it completes even on
+ * serverless after the 200 to Meta.
+ */
+async function forwardToAiAgent(payload: {
+  accountId: string
+  conversationId: string
+  contact: { id: string; name: string | null; phone: string }
+  message: {
+    type: string
+    text: string
+    reply_id: string | null
+    meta_message_id: string
+  }
+  is_first_inbound: boolean
+}) {
+  const url = process.env.AI_AGENT_WEBHOOK_URL
+  if (!url) return
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        account_id: payload.accountId,
+        conversation_id: payload.conversationId,
+        contact: payload.contact,
+        message: payload.message,
+        is_first_inbound: payload.is_first_inbound,
+      }),
+    })
+    if (!res.ok) {
+      console.error('[ai-agent] forward returned status', res.status)
+    }
+  } catch (err) {
+    console.error(
+      '[ai-agent] forward failed:',
+      err instanceof Error ? err.message : err,
+    )
   }
 }
 
