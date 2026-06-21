@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Bot, Loader2 } from "lucide-react";
+import { Bot, Loader2, Sparkles } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -17,16 +20,23 @@ import {
 } from "@/components/ui/card";
 import { SettingsPanelHead } from "./settings-panel-head";
 
+const PROMPT_PLACEHOLDER = `Ex.: Você é o atendente virtual da Loja X.
+- Tom: cordial e objetivo, trate por "você".
+- O que fazemos: ...
+- Produtos / serviços: ...
+- Horário de atendimento: ...
+- Quando não souber responder, ofereça encaminhar para um humano.`;
+
 /**
- * AI customer-service master switch (account-wide).
+ * AI customer-service settings (account-wide).
  *
- * Flips `accounts.ai_agent_enabled` (migration 024). When on, the
- * webhook forwards inbound messages to the configured AI agent (n8n)
- * for an automated reply; when off, messages only land in the inbox.
- *
- * Writes go straight to `accounts` via the RLS-scoped client — the
- * `accounts_update` policy (017) already restricts that to admins+, so
- * non-admins see a disabled, read-only switch. Mirrors DealsSettings.
+ * Two parts, both writing straight to `accounts` via the RLS-scoped
+ * client (accounts_update / 017 restricts writes to admins+, so
+ * non-admins get read-only controls):
+ *   - master switch  → ai_agent_enabled (migration 024)
+ *   - agent persona  → ai_agent_name + ai_system_prompt (migration 025),
+ *     pushed to the n8n agent in the webhook forward so one generic
+ *     workflow answers as each account's own assistant.
  */
 export function AiAgentPanel() {
   const supabase = createClient();
@@ -34,35 +44,74 @@ export function AiAgentPanel() {
     useAuth();
 
   const enabled = account?.ai_agent_enabled ?? false;
-  const [saving, setSaving] = useState(false);
+  const [savingToggle, setSavingToggle] = useState(false);
+
+  // Persona fields — local editable state, synced from the account.
+  const [name, setName] = useState(account?.ai_agent_name ?? "");
+  const [prompt, setPrompt] = useState(account?.ai_system_prompt ?? "");
+  const [savingPersona, setSavingPersona] = useState(false);
+
+  useEffect(() => {
+    // Sync the editable form from the account once it resolves and after
+    // a save round-trips through refreshProfile. Intentional state sync.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setName(account?.ai_agent_name ?? "");
+    setPrompt(account?.ai_system_prompt ?? "");
+  }, [account?.ai_agent_name, account?.ai_system_prompt]);
+
+  const personaDirty =
+    name !== (account?.ai_agent_name ?? "") ||
+    prompt !== (account?.ai_system_prompt ?? "");
+
+  const readOnly = !canEditSettings || profileLoading;
 
   async function handleToggle(next: boolean) {
-    if (!accountId || saving) return;
-    setSaving(true);
+    if (!accountId || savingToggle) return;
+    setSavingToggle(true);
     const { error } = await supabase
       .from("accounts")
       .update({ ai_agent_enabled: next })
       .eq("id", accountId);
     if (error) {
       toast.error("Falha ao atualizar o atendimento por IA");
-      setSaving(false);
+      setSavingToggle(false);
       return;
     }
-    // Pull the new value back into the auth context so the switch and
-    // any consumer reflect it without a full reload.
     await refreshProfile();
-    setSaving(false);
+    setSavingToggle(false);
     toast.success(
       next ? "Atendimento por IA ativado" : "Atendimento por IA desativado",
     );
   }
 
+  async function handleSavePersona() {
+    if (!accountId || !personaDirty || savingPersona) return;
+    setSavingPersona(true);
+    const { error } = await supabase
+      .from("accounts")
+      .update({
+        ai_agent_name: name.trim() || null,
+        ai_system_prompt: prompt.trim() || null,
+      })
+      .eq("id", accountId);
+    if (error) {
+      toast.error("Falha ao salvar a persona do agente");
+      setSavingPersona(false);
+      return;
+    }
+    await refreshProfile();
+    setSavingPersona(false);
+    toast.success("Persona do agente salva");
+  }
+
   return (
-    <section className="max-w-2xl animate-in fade-in-50 duration-200">
+    <section className="max-w-2xl space-y-4 animate-in fade-in-50 duration-200">
       <SettingsPanelHead
         title="Atendimento por IA"
-        description="Quando ativado, as mensagens recebidas são encaminhadas ao seu fluxo de IA (n8n) para resposta automática. Desligue a qualquer momento para atender manualmente."
+        description="Ative o atendimento automático e defina a persona do agente. Quando ativo, as mensagens recebidas são respondidas pela IA — e você assume manualmente a qualquer momento pela inbox."
       />
+
+      {/* Master switch */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
@@ -87,13 +136,13 @@ export function AiAgentPanel() {
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              {saving ? (
+              {savingToggle ? (
                 <Loader2 className="size-4 animate-spin text-muted-foreground" />
               ) : null}
               <Switch
                 checked={enabled}
                 onCheckedChange={handleToggle}
-                disabled={!canEditSettings || profileLoading || saving}
+                disabled={readOnly || savingToggle}
                 aria-label="Ativar atendimento por IA"
               />
             </div>
@@ -103,6 +152,71 @@ export function AiAgentPanel() {
               Apenas administradores da conta podem alterar isto.
             </p>
           ) : null}
+        </CardContent>
+      </Card>
+
+      {/* Agent persona */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <Sparkles className="size-4 text-primary" />
+            Persona do agente
+          </CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Define como a IA responde nesta conta — nome, tom, contexto do
+            negócio, produtos e regras. É enviado ao seu fluxo no n8n a cada
+            mensagem.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-2">
+            <Label className="text-muted-foreground">Nome do agente</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ex.: Assistente da Loja X"
+              disabled={readOnly}
+              className="bg-muted text-foreground"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label className="text-muted-foreground">
+              Instruções (system prompt)
+            </Label>
+            <Textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder={PROMPT_PLACEHOLDER}
+              disabled={readOnly}
+              className="min-h-44 bg-muted font-mono text-xs text-foreground"
+            />
+            <p className="text-xs text-muted-foreground">
+              Descreva o tom, o que a empresa faz, produtos, horários e o que
+              fazer quando não souber responder. É a “personalidade” do agente.
+            </p>
+          </div>
+
+          {canEditSettings ? (
+            <Button
+              onClick={handleSavePersona}
+              disabled={savingPersona || !personaDirty}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {savingPersona ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                "Salvar persona"
+              )}
+            </Button>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Apenas administradores da conta podem alterar isto.
+            </p>
+          )}
         </CardContent>
       </Card>
     </section>

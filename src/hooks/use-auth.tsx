@@ -47,6 +47,11 @@ interface AccountSummary {
    *  (n8n) for an automated reply. NOT NULL DEFAULT false in the DB;
    *  narrowed to false when absent (forks on a pre-024 schema). */
   ai_agent_enabled: boolean;
+  /** AI agent display name (migration 025). Null until configured. */
+  ai_agent_name: string | null;
+  /** AI agent system prompt / persona (migration 025), pushed to the
+   *  n8n agent so it answers as this account's assistant. Null until set. */
+  ai_system_prompt: string | null;
 }
 
 interface AuthContextValue {
@@ -141,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // missing account collapses to null rather than a half-
           // populated row (shouldn't happen post-017 NOT NULL, but
           // belt-and-braces against forks running older schemas).
-          "id, full_name, email, avatar_url, role, beta_features, account_id, account_role, account:accounts!inner(id, name, default_currency, ai_agent_enabled)",
+          "id, full_name, email, avatar_url, role, beta_features, account_id, account_role, account:accounts!inner(id, name, default_currency, ai_agent_enabled, ai_agent_name, ai_system_prompt)",
         )
         .eq("user_id", userId)
         .maybeSingle();
@@ -168,6 +173,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               name: string;
               default_currency: string | null;
               ai_agent_enabled: boolean | null;
+              ai_agent_name: string | null;
+              ai_system_prompt: string | null;
             } | null);
         // Narrow default_currency defensively: forks running pre-021
         // schemas won't have the column, so a missing/null value reads
@@ -180,6 +187,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               // Pre-024 forks lack the column; treat absent as "off" so
               // the bot never auto-engages without an explicit opt-in.
               ai_agent_enabled: accountRaw.ai_agent_enabled ?? false,
+              ai_agent_name: accountRaw.ai_agent_name ?? null,
+              ai_system_prompt: accountRaw.ai_system_prompt ?? null,
             }
           : null;
 

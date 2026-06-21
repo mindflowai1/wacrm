@@ -270,16 +270,20 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
 
       const decryptedAccessToken = decrypt(config.access_token)
 
-      // AI customer-service master switch (migration 024). Read once per
+      // AI customer-service config (migrations 024-025). Read once per
       // delivery — every message in this batch shares the same account.
-      // Gates the n8n forward in processMessage; when off (default) the
-      // inbound stays inbox-only.
+      // Gates the n8n forward AND carries the per-account persona that
+      // travels in the forward payload. Switch off (default) → inbox-only.
       const { data: acctRow } = await supabaseAdmin()
         .from('accounts')
-        .select('ai_agent_enabled')
+        .select('ai_agent_enabled, ai_agent_name, ai_system_prompt')
         .eq('id', config.account_id)
         .maybeSingle()
-      const aiAgentEnabled = acctRow?.ai_agent_enabled === true
+      const aiConfig: AiAgentConfig = {
+        enabled: acctRow?.ai_agent_enabled === true,
+        agentName: (acctRow?.ai_agent_name as string | null) ?? null,
+        systemPrompt: (acctRow?.ai_system_prompt as string | null) ?? null,
+      }
 
       for (let i = 0; i < value.messages.length; i++) {
         const message = value.messages[i]
@@ -296,7 +300,7 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
           // the admin who saved the WhatsApp config.
           config.user_id,
           decryptedAccessToken,
-          aiAgentEnabled
+          aiConfig
         )
       }
     }
@@ -519,6 +523,13 @@ async function handleReaction(
   }
 }
 
+/** Per-account AI agent config resolved once per webhook delivery. */
+interface AiAgentConfig {
+  enabled: boolean
+  agentName: string | null
+  systemPrompt: string | null
+}
+
 async function processMessage(
   message: WhatsAppMessage,
   contact: { profile: { name: string }; wa_id: string },
@@ -531,10 +542,11 @@ async function processMessage(
   // WhatsApp config; the choice is arbitrary post-017 but stable.
   configOwnerUserId: string,
   accessToken: string,
-  // Account-level AI master switch (migration 024). When true AND
-  // AI_AGENT_WEBHOOK_URL is set, the inbound is forwarded to the n8n
-  // agent after it lands in the inbox. Resolved once per delivery.
-  aiAgentEnabled: boolean
+  // Account-level AI config (migrations 024-025): master switch + the
+  // per-account persona pushed to the n8n agent. Resolved once per
+  // delivery. Forward happens only when enabled AND AI_AGENT_WEBHOOK_URL
+  // is set, after the message lands in the inbox.
+  aiConfig: AiAgentConfig
 ) {
   const senderPhone = normalizePhone(message.from)
   const contactName = contact.profile.name
@@ -749,7 +761,7 @@ async function processMessage(
   // would double up). The actual reply comes back through
   // /api/integrations/agent-reply so it lands in the inbox too.
   // ============================================================
-  if (aiAgentEnabled && !flowConsumed) {
+  if (aiConfig.enabled && !flowConsumed) {
     // Human handoff: once a human agent has taken over this lead, the AI
     // stays out for good — see humanHasTakenOver. The default is a
     // permanent handoff (the lead is the human's from first contact on).
@@ -774,6 +786,12 @@ async function processMessage(
           meta_message_id: message.id,
         },
         is_first_inbound: isFirstInboundMessage,
+        // Per-account persona so one generic n8n workflow can answer as
+        // this account's own assistant.
+        ai_config: {
+          agent_name: aiConfig.agentName,
+          system_prompt: aiConfig.systemPrompt,
+        },
       })
     }
   }
@@ -844,6 +862,7 @@ async function forwardToAiAgent(payload: {
     meta_message_id: string
   }
   is_first_inbound: boolean
+  ai_config: { agent_name: string | null; system_prompt: string | null }
 }) {
   const url = process.env.AI_AGENT_WEBHOOK_URL
   if (!url) return
@@ -857,6 +876,7 @@ async function forwardToAiAgent(payload: {
         contact: payload.contact,
         message: payload.message,
         is_first_inbound: payload.is_first_inbound,
+        ai_config: payload.ai_config,
       }),
     })
     if (!res.ok) {
