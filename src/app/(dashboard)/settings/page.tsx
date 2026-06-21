@@ -9,6 +9,7 @@ import { SettingsRail } from '@/components/settings/settings-rail';
 import { SettingsOverview } from '@/components/settings/settings-overview';
 import { ProfileForm } from '@/components/settings/profile-form';
 import { SecurityPanel } from '@/components/settings/security-panel';
+import { BillingPanel } from '@/components/settings/billing-panel';
 import { AppearancePanel } from '@/components/settings/appearance-panel';
 import { WhatsAppConfig } from '@/components/settings/whatsapp-config';
 import { AiAgentPanel } from '@/components/settings/ai-agent-panel';
@@ -54,6 +55,7 @@ export default function SettingsPage() {
     overview: <SettingsOverview onSelect={go} />,
     profile: <ProfileForm />,
     security: <SecurityPanel />,
+    billing: <BillingPanel />,
     appearance: <AppearancePanel />,
     whatsapp: <WhatsAppConfig />,
     ai: <AiAgentPanel />,
