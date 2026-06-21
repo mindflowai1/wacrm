@@ -224,6 +224,24 @@ function SignupPageInner() {
             </Button>
           </form>
 
+          <p className="mt-4 text-center text-xs text-muted-foreground">
+            Ao criar conta, você concorda com os{" "}
+            <Link
+              href="/termos"
+              className="text-primary hover:text-primary/80"
+            >
+              Termos de Uso
+            </Link>{" "}
+            e a{" "}
+            <Link
+              href="/privacidade"
+              className="text-primary hover:text-primary/80"
+            >
+              Política de Privacidade
+            </Link>
+            .
+          </p>
+
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Já tem uma conta?{" "}
             <Link
