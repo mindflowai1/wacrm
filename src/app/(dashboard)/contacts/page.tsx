@@ -119,7 +119,7 @@ export default function ContactsPage() {
     const { data, count, error } = await query;
 
     if (error) {
-      toast.error('Failed to load contacts');
+      toast.error('Falha ao carregar contatos');
       setLoading(false);
       return;
     }
@@ -252,7 +252,7 @@ export default function ContactsPage() {
     if (error) {
       toast.error('Falha ao excluir os contatos');
     } else {
-      toast.success(`${ids.length} contact${ids.length === 1 ? '' : 's'} deleted`);
+      toast.success(`${ids.length} contato${ids.length === 1 ? '' : 's'} excluído${ids.length === 1 ? '' : 's'}`);
       setSelected(new Set());
       fetchContacts();
     }
@@ -272,7 +272,7 @@ export default function ContactsPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Contatos</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage your contact list. {totalCount > 0 && `${totalCount} total contacts.`}
+            Gerencie sua lista de contatos. {totalCount > 0 && `${totalCount} contatos no total.`}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -289,7 +289,7 @@ export default function ContactsPage() {
           <GatedButton
             variant="outline"
             canAct={canEdit}
-            gateReason="add or import contacts"
+            gateReason="adicionar ou importar contatos"
             onClick={() => setImportOpen(true)}
             className="border-border text-muted-foreground hover:bg-muted"
           >
@@ -298,7 +298,7 @@ export default function ContactsPage() {
           </GatedButton>
           <GatedButton
             canAct={canEdit}
-            gateReason="add or import contacts"
+            gateReason="adicionar ou importar contatos"
             onClick={openAddForm}
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
@@ -329,7 +329,7 @@ export default function ContactsPage() {
         <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-muted/40 px-4 py-2">
           <p className="text-sm text-foreground">
             <span className="font-medium">{selected.size}</span>{' '}
-            {selected.size === 1 ? 'contact' : 'contacts'} selected
+            {selected.size === 1 ? 'contato selecionado' : 'contatos selecionados'}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -338,13 +338,13 @@ export default function ContactsPage() {
               onClick={() => setSelected(new Set())}
               className="text-muted-foreground hover:text-foreground"
             >
-              Clear
+              Limpar
             </Button>
             <GatedButton
               variant="destructive"
               size="sm"
               canAct={canEdit}
-              gateReason="delete contacts"
+              gateReason="excluir contatos"
               onClick={() => setBulkDeleteOpen(true)}
             >
               <Trash2 className="size-4" />
@@ -393,7 +393,7 @@ export default function ContactsPage() {
                   <div className="flex flex-col items-center gap-2">
                     <Users className="size-8 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
-                      {search ? 'No contacts match your search.' : 'No contacts yet.'}
+                      {search ? 'Nenhum contato corresponde à sua busca.' : 'Nenhum contato ainda.'}
                     </p>
                     {!search && (
                       <Button
@@ -420,7 +420,7 @@ export default function ContactsPage() {
                     <Checkbox
                       checked={selected.has(contact.id)}
                       onCheckedChange={() => toggleSelect(contact.id)}
-                      aria-label={`Select ${contact.name || contact.phone}`}
+                      aria-label={`Selecionar ${contact.name || contact.phone}`}
                     />
                   </TableCell>
                   <TableCell className="text-foreground font-medium">
@@ -461,7 +461,7 @@ export default function ContactsPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground text-xs hidden lg:table-cell">
-                    {new Date(contact.created_at).toLocaleDateString('en-US', {
+                    {new Date(contact.created_at).toLocaleDateString('pt-BR', {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric',
@@ -520,7 +520,7 @@ export default function ContactsPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
-            Showing {page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, totalCount)} of{' '}
+            Exibindo {page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, totalCount)} de{' '}
             {totalCount}
           </p>
           <div className="flex items-center gap-1">
@@ -534,7 +534,7 @@ export default function ContactsPage() {
               <ChevronLeft className="size-4" />
             </Button>
             <span className="text-xs text-muted-foreground px-2">
-              Page {page + 1} of {totalPages}
+              Página {page + 1} de {totalPages}
             </span>
             <Button
               variant="outline"
@@ -594,11 +594,11 @@ export default function ContactsPage() {
           <DialogHeader>
             <DialogTitle className="text-popover-foreground">Excluir Contato</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Are you sure you want to delete{' '}
+              Tem certeza de que deseja excluir{' '}
               <span className="text-popover-foreground font-medium">
                 {deleteTarget?.name || deleteTarget?.phone}
               </span>
-              ? This action cannot be undone.
+              ? Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="bg-popover border-border">
@@ -615,7 +615,7 @@ export default function ContactsPage() {
               disabled={deleting}
             >
               {deleting && <Loader2 className="size-4 animate-spin" />}
-              Delete
+              Excluir
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -626,14 +626,14 @@ export default function ContactsPage() {
         <DialogContent className="bg-popover border-border text-popover-foreground sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-popover-foreground">
-              Delete {selected.size} {selected.size === 1 ? 'Contact' : 'Contacts'}
+              Excluir {selected.size} {selected.size === 1 ? 'contato' : 'contatos'}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Are you sure you want to delete{' '}
+              Tem certeza de que deseja excluir{' '}
               <span className="text-popover-foreground font-medium">
-                {selected.size} {selected.size === 1 ? 'contact' : 'contacts'}
+                {selected.size} {selected.size === 1 ? 'contato' : 'contatos'}
               </span>
-              ? This action cannot be undone.
+              ? Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="bg-popover border-border">
@@ -650,7 +650,7 @@ export default function ContactsPage() {
               disabled={deleting}
             >
               {deleting && <Loader2 className="size-4 animate-spin" />}
-              Delete
+              Excluir
             </Button>
           </DialogFooter>
         </DialogContent>

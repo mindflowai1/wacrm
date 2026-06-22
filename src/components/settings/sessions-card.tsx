@@ -35,12 +35,12 @@ export function SessionsCard() {
       // triggers the usual redirect.
       const { error } = await supabase.auth.signOut({ scope: 'global' });
       if (error) {
-        toast.error(`Sign-out failed: ${error.message}`);
+        toast.error(`Falha ao encerrar a sessão: ${error.message}`);
         return;
       }
       window.location.href = '/login';
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
+      const msg = err instanceof Error ? err.message : 'Erro desconhecido';
       toast.error(msg);
     } finally {
       setSigningOut(false);
@@ -56,8 +56,9 @@ export function SessionsCard() {
             Sessões ativas
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Sign out of every device where you&apos;re logged in — including
-            this one. Useful if you lost a laptop or shared your password.
+            Encerre a sessão em todos os dispositivos em que você está
+            conectado — incluindo este. Útil se você perdeu um notebook ou
+            compartilhou sua senha.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -77,9 +78,9 @@ export function SessionsCard() {
           <DialogHeader>
             <DialogTitle>Sair de todos os lugares?</DialogTitle>
             <DialogDescription>
-              Every device logged into this account will be signed out and
-              will need to log in again. You will be redirected to the login
-              page.
+              Todos os dispositivos conectados a esta conta serão desconectados
+              e precisarão entrar de novo. Você será redirecionado para a
+              página de login.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -98,7 +99,7 @@ export function SessionsCard() {
                   Saindo…
                 </>
               ) : (
-                'Sign out everywhere'
+                'Sair de todos os lugares'
               )}
             </Button>
           </DialogFooter>

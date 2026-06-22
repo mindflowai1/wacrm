@@ -47,34 +47,34 @@ const audienceOptions: {
 }[] = [
   {
     type: 'all',
-    label: 'All Contacts',
-    description: 'Send to every contact in your database',
+    label: 'Todos os Contatos',
+    description: 'Enviar para todos os contatos da sua base',
     icon: Users,
   },
   {
     type: 'tags',
-    label: 'Filter by Tags',
-    description: 'Target contacts with specific tags',
+    label: 'Filtrar por Etiquetas',
+    description: 'Direcionar contatos com etiquetas específicas',
     icon: Tags,
   },
   {
     type: 'custom_field',
     label: 'Campo Personalizado',
-    description: 'Filter by a custom field value',
+    description: 'Filtrar por um valor de campo personalizado',
     icon: Filter,
   },
   {
     type: 'csv',
-    label: 'Upload CSV',
-    description: 'Upload a list of phone numbers',
+    label: 'Enviar CSV',
+    description: 'Envie uma lista de números de telefone',
     icon: Upload,
   },
 ];
 
 const OPERATOR_OPTIONS: { value: CustomFieldOperator; label: string }[] = [
-  { value: 'is', label: 'is' },
-  { value: 'is_not', label: 'is not' },
-  { value: 'contains', label: 'contains' },
+  { value: 'is', label: 'é' },
+  { value: 'is_not', label: 'não é' },
+  { value: 'contains', label: 'contém' },
 ];
 
 export function Step2SelectAudience({
@@ -381,7 +381,7 @@ export function Step2SelectAudience({
                 type="text"
                 value={audience.customField?.value ?? ''}
                 onChange={(e) => updateCustomField({ value: e.target.value })}
-                placeholder="Value"
+                placeholder="Valor"
                 className="h-9 rounded-lg border border-border bg-muted px-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
               />
             </div>
@@ -396,7 +396,7 @@ export function Step2SelectAudience({
           <p className="text-sm font-medium text-foreground">
             Excluir contatos com estas etiquetas
           </p>
-          <span className="text-xs text-muted-foreground">(optional)</span>
+          <span className="text-xs text-muted-foreground">(opcional)</span>
         </div>
         {tags.length === 0 ? (
           <p className="text-xs text-muted-foreground">Nenhuma etiqueta disponível.</p>

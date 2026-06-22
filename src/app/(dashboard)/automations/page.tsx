@@ -75,7 +75,7 @@ export default function AutomationsPage() {
       if (fetchErr) throw fetchErr
       setAutomations((data ?? []) as Automation[])
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load automations")
+      setError(err instanceof Error ? err.message : "Falha ao carregar automações")
     }
   }
 
@@ -99,17 +99,17 @@ export default function AutomationsPage() {
         prev?.map((x) => (x.id === a.id ? { ...x, is_active: !next } : x)) ?? prev,
       )
       const body = await res.json().catch(() => ({}))
-      toast.error(body?.error ?? "Failed to update")
+      toast.error(body?.error ?? "Falha ao atualizar")
       return
     }
-    toast.success(next ? "Automation activated" : "Automation paused")
+    toast.success(next ? "Automação ativada" : "Automação pausada")
   }
 
   async function duplicate(a: Automation) {
     const res = await fetch(`/api/automations/${a.id}/duplicate`, { method: "POST" })
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))
-      toast.error(body?.error ?? "Failed to duplicate")
+      toast.error(body?.error ?? "Falha ao duplicar")
       return
     }
     toast.success("Automação duplicada")
@@ -123,7 +123,7 @@ export default function AutomationsPage() {
     setDeleting(false)
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))
-      toast.error(body?.error ?? "Failed to delete")
+      toast.error(body?.error ?? "Falha ao excluir")
       return
     }
     toast.success("Automação excluída")
@@ -140,7 +140,7 @@ export default function AutomationsPage() {
       <div className="flex h-64 flex-col items-center justify-center gap-2">
         <p className="text-sm text-red-400">{error}</p>
         <Button variant="outline" onClick={() => window.location.reload()}>
-          Retry
+          Tentar novamente
         </Button>
       </div>
     )
@@ -160,14 +160,14 @@ export default function AutomationsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Automations</h1>
+          <h1 className="text-2xl font-bold text-foreground">Automações</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Crie fluxos que reagem automaticamente a eventos do WhatsApp®.
           </p>
         </div>
         <GatedButton
           canAct={canCreate}
-          gateReason="create automations"
+          gateReason="criar automações"
           onClick={() => router.push("/automations/new")}
           className="bg-primary text-primary-foreground hover:bg-primary/90"
         >
@@ -232,9 +232,9 @@ export default function AutomationsPage() {
           <DialogHeader>
             <DialogTitle>Excluir automação</DialogTitle>
             <DialogDescription>
-              This permanently removes{" "}
-              <span className="text-foreground">{pendingDelete?.name}</span> and its execution
-              history. This cannot be undone.
+              Isso remove permanentemente{" "}
+              <span className="text-foreground">{pendingDelete?.name}</span> e seu histórico de
+              execução. Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -251,7 +251,7 @@ export default function AutomationsPage() {
               disabled={deleting}
             >
               {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-              Delete
+              Excluir
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -296,7 +296,7 @@ function AutomationCard({
               {automation.name}
             </span>
             {automation.is_active && (
-              <span className="relative flex h-2 w-2" aria-label="active">
+              <span className="relative flex h-2 w-2" aria-label="ativa">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
               </span>
@@ -315,10 +315,10 @@ function AutomationCard({
               {meta.label}
             </span>
             <span className="tabular-nums">
-              {automation.execution_count} run{automation.execution_count === 1 ? "" : "s"}
+              {automation.execution_count} execuç{automation.execution_count === 1 ? "ão" : "ões"}
             </span>
             <span aria-hidden>·</span>
-            <span>last {formatRelative(automation.last_executed_at)}</span>
+            <span>última execução {formatRelative(automation.last_executed_at)}</span>
           </div>
         </button>
 
@@ -326,12 +326,12 @@ function AutomationCard({
           <Switch
             checked={automation.is_active}
             onCheckedChange={(v) => onToggle(!!v)}
-            aria-label={automation.is_active ? "Deactivate" : "Activate"}
+            aria-label={automation.is_active ? "Desativar" : "Ativar"}
           />
 
           <DropdownMenu>
             <DropdownMenuTrigger
-              aria-label="Open menu"
+              aria-label="Abrir menu"
               className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-[popup-open]:bg-muted"
             >
               <MoreVertical className="h-4 w-4" />

@@ -14,10 +14,10 @@ import { useBroadcastSending } from '@/hooks/use-broadcast-sending';
 import { Check } from 'lucide-react';
 
 const steps = [
-  { label: 'Template', key: 'template' },
-  { label: 'Audience', key: 'audience' },
-  { label: 'Personalize', key: 'personalize' },
-  { label: 'Send', key: 'send' },
+  { label: 'Modelo', key: 'template' },
+  { label: 'Público', key: 'audience' },
+  { label: 'Personalizar', key: 'personalize' },
+  { label: 'Enviar', key: 'send' },
 ] as const;
 
 export default function NewBroadcastPage() {
@@ -63,7 +63,7 @@ export default function NewBroadcastPage() {
     } catch (err) {
       // Previously swallowed with console.error — the wizard would
       // just no-op, leaving the user confused. Surface the reason.
-      const message = err instanceof Error ? err.message : 'Broadcast failed';
+      const message = err instanceof Error ? err.message : 'Falha na transmissão';
       console.error('Broadcast failed:', err);
       toast.error(message);
     }
@@ -89,7 +89,7 @@ export default function NewBroadcastPage() {
     } = await supabase.auth.getSession();
     const user = session?.user;
     if (!user) {
-      toast.error('Not signed in.');
+      toast.error('Não autenticado.');
       return;
     }
     if (!accountId) {
@@ -118,10 +118,10 @@ export default function NewBroadcastPage() {
     });
 
     if (error) {
-      toast.error(`Failed to save draft: ${error.message}`);
+      toast.error(`Falha ao salvar rascunho: ${error.message}`);
       return;
     }
-    toast.success('Draft saved');
+    toast.success('Rascunho salvo');
     router.push('/broadcasts');
   }
 

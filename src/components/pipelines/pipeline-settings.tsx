@@ -353,7 +353,7 @@ export function PipelineSettings({
                 disabled={saving || !name.trim()}
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                {saving ? "Salvando..." : "Save Changes"}
+                {saving ? "Salvando..." : "Salvar Alterações"}
               </Button>
             </DialogFooter>
           </>

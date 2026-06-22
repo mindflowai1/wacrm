@@ -39,11 +39,11 @@ const STATUS_COLORS: Record<ConversationStatus, string> = {
 type InboxFilter = ConversationStatus | "all" | "unread";
 
 const FILTER_OPTIONS: { label: string; value: InboxFilter }[] = [
-  { label: "All", value: "all" },
-  { label: "Unread", value: "unread" },
-  { label: "Open", value: "open" },
-  { label: "Pending", value: "pending" },
-  { label: "Closed", value: "closed" },
+  { label: "Todas", value: "all" },
+  { label: "Não lidas", value: "unread" },
+  { label: "Abertas", value: "open" },
+  { label: "Pendentes", value: "pending" },
+  { label: "Encerradas", value: "closed" },
 ];
 
 export function ConversationList({
@@ -167,7 +167,7 @@ export function ConversationList({
 
         <DropdownMenu>
           <DropdownMenuTrigger className="inline-flex items-center justify-center h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground rounded-md hover:bg-muted">
-              {activeFilter?.label ?? "All"}
+              {activeFilter?.label ?? "Todas"}
               <ChevronDown className="h-3 w-3" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -236,7 +236,7 @@ function ConversationItem({
   onSelect,
 }: ConversationItemProps) {
   const contact = conversation.contact;
-  const displayName = contact?.name || contact?.phone || "Unknown";
+  const displayName = contact?.name || contact?.phone || "Desconhecido";
   const initials = displayName.charAt(0).toUpperCase();
 
   const handleClick = useCallback(() => {

@@ -245,7 +245,7 @@ export function MessageComposer({
         removeStaged(draftRef.current?.path);
         setDraft({ kind, mediaUrl: publicUrl, path, filename: file.name, caption: "" });
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Upload failed.");
+        toast.error(err instanceof Error ? err.message : "Falha no envio.");
       } finally {
         setBusy(false);
       }
@@ -282,7 +282,7 @@ export function MessageComposer({
         removeStaged(draftRef.current?.path);
         setDraft({ kind: "audio", mediaUrl: publicUrl, path, filename: file.name, caption: "" });
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Upload failed.");
+        toast.error(err instanceof Error ? err.message : "Falha no envio.");
       } finally {
         setBusy(false);
       }
@@ -293,7 +293,7 @@ export function MessageComposer({
   const startRecording = useCallback(async () => {
     if (inputsDisabled || busy || recording) return;
     if (!navigator.mediaDevices?.getUserMedia || typeof AudioContext === "undefined") {
-      toast.error("Voice recording isn't supported in this browser.");
+      toast.error("Gravação de voz não é suportada neste navegador.");
       return;
     }
     try {
@@ -478,10 +478,10 @@ export function MessageComposer({
               disabled={inputsDisabled || busy}
               title={
                 readOnly
-                  ? "Read-only — your role can't send messages"
+                  ? "Somente leitura — sua função não permite enviar mensagens"
                   : inputsDisabled
                     ? undefined
-                    : "Attach media"
+                    : "Anexar mídia"
               }
               className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md p-0 text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -502,7 +502,7 @@ export function MessageComposer({
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => documentInputRef.current?.click()}>
                 <FileText className="mr-2 h-4 w-4" />
-                Document
+                Documento
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => void startRecording()}>
                 <Mic className="mr-2 h-4 w-4" />
@@ -515,7 +515,7 @@ export function MessageComposer({
             variant="ghost"
             size="sm"
             canAct={!readOnly}
-            gateReason="send messages"
+            gateReason="enviar mensagens"
             title={readOnly ? undefined : "Enviar modelo"}
             className="h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-foreground"
             onClick={onOpenTemplates}
@@ -530,17 +530,17 @@ export function MessageComposer({
             onKeyDown={handleKeyDown}
             placeholder={
               readOnly
-                ? "Read-only — viewers can browse but not reply"
+                ? "Somente leitura — visualizadores podem navegar, mas não responder"
                 : sessionExpired
-                  ? "Session expired - use a template"
-                  : "Type a message... (Shift+Enter for new line)"
+                  ? "Sessão expirada - use um modelo"
+                  : "Digite uma mensagem... (Shift+Enter para nova linha)"
             }
             disabled={sessionExpired || readOnly}
             rows={1}
             // Textarea keeps its own inline title — the GatedButton
             // wrapping pattern doesn't apply to non-button inputs.
             // The placeholder text also surfaces the read-only state.
-            title={readOnly ? "Read-only — your role can't send messages" : undefined}
+            title={readOnly ? "Somente leitura — sua função não permite enviar mensagens" : undefined}
             className={cn(
               "flex-1 resize-none rounded-xl border border-border bg-muted px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-primary/50",
               (sessionExpired || readOnly) && "cursor-not-allowed opacity-50"
@@ -550,7 +550,7 @@ export function MessageComposer({
           <GatedButton
             size="sm"
             canAct={!readOnly}
-            gateReason="send messages"
+            gateReason="enviar mensagens"
             disabled={!text.trim() || sessionExpired || sending}
             onClick={handleSend}
             className="h-9 w-9 shrink-0 bg-primary p-0 hover:bg-primary/90 disabled:opacity-40"
@@ -565,7 +565,7 @@ export function MessageComposer({
           under the textarea left edge. */}
       {!draft && !recording && (
         <p className="mt-1 pl-[5.5rem] text-[10px] text-muted-foreground">
-          Type &apos;/&apos; for quick replies
+          Digite &apos;/&apos; para respostas rápidas
         </p>
       )}
     </div>
@@ -647,7 +647,7 @@ function MediaDraftPreview({
         <GatedButton
           size="sm"
           canAct={!readOnly}
-          gateReason="send messages"
+          gateReason="enviar mensagens"
           disabled={busy}
           onClick={onSend}
           className={cn(

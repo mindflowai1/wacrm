@@ -37,11 +37,11 @@ import { GatedButton } from "@/components/ui/gated-button";
 
 // Spec-defined seed — name and color per the product spec.
 const SPEC_DEFAULT_STAGES = [
-  { name: "New Lead", color: "#3b82f6", position: 0 }, // blue
-  { name: "Qualified", color: "#eab308", position: 1 }, // yellow
-  { name: "Proposal Sent", color: "#f97316", position: 2 }, // orange
-  { name: "Negotiation", color: "#8b5cf6", position: 3 }, // purple
-  { name: "Won", color: "#22c55e", position: 4 }, // green
+  { name: "Novo Lead", color: "#3b82f6", position: 0 }, // blue
+  { name: "Qualificado", color: "#eab308", position: 1 }, // yellow
+  { name: "Proposta Enviada", color: "#f97316", position: 2 }, // orange
+  { name: "Negociação", color: "#8b5cf6", position: 3 }, // purple
+  { name: "Ganho", color: "#22c55e", position: 4 }, // green
 ];
 
 export default function PipelinesPage() {
@@ -118,7 +118,7 @@ export default function PipelinesPage() {
 
     const { data: pipeline, error } = await supabase
       .from("pipelines")
-      .insert({ user_id: user.id, account_id: accountId, name: "Sales Pipeline" })
+      .insert({ user_id: user.id, account_id: accountId, name: "Funil de Vendas" })
       .select()
       .single();
 
@@ -323,7 +323,7 @@ export default function PipelinesPage() {
             >
               <GitBranch className="h-4 w-4 text-primary" />
               <span className="font-semibold">
-                {selectedPipeline?.name ?? "Select Pipeline"}
+                {selectedPipeline?.name ?? "Selecionar Funil"}
               </span>
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             </DropdownMenuTrigger>
@@ -368,7 +368,7 @@ export default function PipelinesPage() {
           <GatedButton
             variant="outline"
             canAct={canEditSettings}
-            gateReason="create pipelines"
+            gateReason="criar funis"
             onClick={() => setNewPipelineOpen(true)}
             className="border-border bg-card text-foreground hover:bg-muted"
           >
@@ -377,7 +377,7 @@ export default function PipelinesPage() {
           </GatedButton>
           <GatedButton
             canAct={canCreateDeals}
-            gateReason="create deals"
+            gateReason="criar negócios"
             disabled={!selectedPipelineId || stages.length === 0}
             onClick={() => handleAddDeal()}
             className="bg-primary text-primary-foreground hover:bg-primary/90"
@@ -400,7 +400,7 @@ export default function PipelinesPage() {
           </p>
           <GatedButton
             canAct={canEditSettings}
-            gateReason="create pipelines"
+            gateReason="criar funis"
             onClick={() => setNewPipelineOpen(true)}
             className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
           >
@@ -432,7 +432,7 @@ export default function PipelinesPage() {
             <Input
               value={newPipelineName}
               onChange={(e) => setNewPipelineName(e.target.value)}
-              placeholder="e.g., Enterprise Sales"
+              placeholder="ex.: Vendas Enterprise"
               className="mt-2 bg-muted border-border text-foreground"
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleCreatePipeline();

@@ -85,13 +85,14 @@ function ModeCard({
 }) {
   const isLight = mode === "light";
   const Icon = isLight ? Sun : Moon;
+  const modeLabel = isLight ? "Claro" : "Escuro";
   return (
     <button
       type="button"
       role="radio"
       onClick={onPick}
       aria-checked={isActive}
-      aria-label={`Use ${mode} mode`}
+      aria-label={`Usar modo ${modeLabel.toLowerCase()}`}
       className={cn(
         "flex items-center gap-3 rounded-lg border bg-card p-4 text-left transition-colors",
         isActive
@@ -105,8 +106,8 @@ function ModeCard({
       >
         <Icon className="h-4 w-4" />
       </span>
-      <span className="flex-1 text-sm font-semibold capitalize text-foreground">
-        {mode}
+      <span className="flex-1 text-sm font-semibold text-foreground">
+        {modeLabel}
       </span>
       {isActive && (
         <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-medium text-primary">
@@ -138,7 +139,7 @@ function ThemeCard({
       type="button"
       onClick={onPick}
       aria-pressed={isActive}
-      aria-label={`Use ${name} theme`}
+      aria-label={`Usar tema ${name}`}
       className={cn(
         "flex flex-col gap-3 rounded-lg border bg-card p-4 text-left transition-colors",
         isActive
@@ -177,7 +178,7 @@ function ThemeCard({
         <span className="w-3 bg-muted" />
         <span className="w-3 bg-card" />
       </div>
-      <span className="sr-only">Theme id: {id}</span>
+      <span className="sr-only">ID do tema: {id}</span>
     </button>
   );
 }

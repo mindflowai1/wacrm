@@ -71,7 +71,7 @@ export function NodeConfigForm({
           allNodes={allNodes}
           currentKey={node.node_key}
           onChange={(v) => onUpdateConfig({ next_node_key: v })}
-          label="Advances to"
+          label="Avança para"
         />
       );
 
@@ -136,7 +136,7 @@ export function NodeConfigForm({
           />
           <div>
             <label className="mb-1 block text-xs text-muted-foreground">
-              Variable key (stored in flow_runs.vars; alphanumeric + underscore)
+              Chave da variável (armazenada em flow_runs.vars; alfanumérico + underscore)
             </label>
             <Input
               value={(cfg as { var_key?: string }).var_key ?? ""}
@@ -145,11 +145,11 @@ export function NodeConfigForm({
                   var_key: e.target.value.replace(/[^a-zA-Z0-9_]/g, ""),
                 })
               }
-              placeholder="e.g. name, email, company"
+              placeholder="ex.: nome, email, empresa"
               className="bg-muted font-mono text-xs"
             />
             <p className="mt-1 text-[10px] text-muted-foreground">
-              Interpolate in downstream prompts and handoff notes with{" "}
+              Use em prompts e notas de transferência seguintes com{" "}
               <code className="rounded bg-muted px-1">
                 {"{{vars."}
                 {(cfg as { var_key?: string }).var_key || "name"}
@@ -163,7 +163,7 @@ export function NodeConfigForm({
             allNodes={allNodes}
             currentKey={node.node_key}
             onChange={(v) => onUpdateConfig({ next_node_key: v })}
-            label="After capturing, advance to"
+            label="Após capturar, avança para"
           />
         </>
       );
@@ -201,8 +201,8 @@ export function NodeConfigForm({
     case "end":
       return (
         <p className="text-xs text-muted-foreground">
-          Terminal node. When the runner reaches this node the run is marked
-          complete. No config needed.
+          Nó final. Quando o motor chega a este nó, a execução é marcada como
+          concluída. Não precisa de configuração.
         </p>
       );
   }
@@ -246,7 +246,7 @@ function SendButtonsForm({
         ...buttons,
         {
           reply_id: `btn_${buttons.length + 1}`,
-          title: "Option",
+          title: "Opção",
           next_node_key: "",
         },
       ],
@@ -308,7 +308,7 @@ function SendButtonsForm({
                 nodes={allNodes}
                 excludeKey={currentKey}
                 onChange={(v) => updateButton(i, { next_node_key: v ?? "" })}
-                placeholder="Next node…"
+                placeholder="Próximo nó…"
               />
               <Button
                 variant="ghost"
@@ -391,7 +391,7 @@ function SendListForm({
           rows: [
             {
               reply_id: `row_${totalRows + 1}`,
-              title: `Option ${totalRows + 1}`,
+              title: `Opção ${totalRows + 1}`,
               next_node_key: "",
             },
           ],
@@ -428,7 +428,7 @@ function SendListForm({
                 ...s.rows,
                 {
                   reply_id: `row_${totalRows + 1}`,
-                  title: `Option ${totalRows + 1}`,
+                  title: `Opção ${totalRows + 1}`,
                   next_node_key: "",
                 },
               ],
@@ -479,7 +479,7 @@ function SendListForm({
                 onChange={(e) =>
                   updateSection(sIdx, { title: e.target.value })
                 }
-                placeholder={`Section ${sIdx + 1} title (optional)`}
+                placeholder={`Título da seção ${sIdx + 1} (opcional)`}
                 className="bg-muted text-xs"
               />
               {sections.length > 1 && (
@@ -535,7 +535,7 @@ function SendListForm({
                   onChange={(v) =>
                     updateRow(sIdx, rIdx, { next_node_key: v ?? "" })
                   }
-                  placeholder="Next node…"
+                  placeholder="Próximo nó…"
                 />
                 <Button
                   variant="ghost"
@@ -614,7 +614,7 @@ function ConditionForm({
     <>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <div>
-          <label className="mb-1 block text-xs text-muted-foreground">If</label>
+          <label className="mb-1 block text-xs text-muted-foreground">Se</label>
           <Select
             value={subject}
             onValueChange={(v) =>
@@ -634,10 +634,10 @@ function ConditionForm({
         <div className="md:col-span-2">
           <label className="mb-1 block text-xs text-muted-foreground">
             {subject === "var"
-              ? "var name"
+              ? "nome da variável"
               : subject === "tag"
-                ? "Tag"
-                : "Field"}
+                ? "Etiqueta"
+                : "Campo"}
           </label>
           {subject === "tag" && tags.length > 0 ? (
             <Select
@@ -645,7 +645,7 @@ function ConditionForm({
               onValueChange={(v) => onUpdateConfig({ subject_key: v })}
             >
               <SelectTrigger className="bg-muted">
-                <SelectValue placeholder="Pick a tag…" />
+                <SelectValue placeholder="Escolha uma etiqueta…" />
               </SelectTrigger>
               <SelectContent>
                 {tags.map((t) => (
@@ -676,7 +676,7 @@ function ConditionForm({
               onChange={(e) =>
                 onUpdateConfig({ subject_key: e.target.value })
               }
-              placeholder={subject === "var" ? "e.g. email" : "tag UUID"}
+              placeholder={subject === "var" ? "ex.: email" : "UUID da etiqueta"}
               className="bg-muted font-mono text-xs"
             />
           )}
@@ -701,10 +701,10 @@ function ConditionForm({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="present">is present</SelectItem>
-              <SelectItem value="absent">is absent</SelectItem>
-              <SelectItem value="equals">equals</SelectItem>
-              <SelectItem value="contains">contains</SelectItem>
+              <SelectItem value="present">está presente</SelectItem>
+              <SelectItem value="absent">está ausente</SelectItem>
+              <SelectItem value="equals">é igual a</SelectItem>
+              <SelectItem value="contains">contém</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -726,14 +726,14 @@ function ConditionForm({
           allNodes={allNodes}
           currentKey={currentKey}
           onChange={(v) => onUpdateConfig({ true_next: v })}
-          label="If true → advance to"
+          label="Se verdadeiro → avança para"
         />
         <NextNodeRow
           value={cfg.false_next ?? ""}
           allNodes={allNodes}
           currentKey={currentKey}
           onChange={(v) => onUpdateConfig({ false_next: v })}
-          label="If false → advance to"
+          label="Se falso → avança para"
         />
       </div>
     </>
@@ -791,7 +791,7 @@ function SetTagForm({
               onValueChange={(v) => onUpdateConfig({ tag_id: v })}
             >
               <SelectTrigger className="bg-muted">
-                <SelectValue placeholder="Pick a tag…" />
+                <SelectValue placeholder="Escolha uma etiqueta…" />
               </SelectTrigger>
               <SelectContent>
                 {tags.map((t) => (
@@ -805,7 +805,7 @@ function SetTagForm({
             <Input
               value={cfg.tag_id ?? ""}
               onChange={(e) => onUpdateConfig({ tag_id: e.target.value })}
-              placeholder="Tag UUID"
+              placeholder="UUID da etiqueta"
               className="bg-muted font-mono text-xs"
             />
           )}
@@ -816,7 +816,7 @@ function SetTagForm({
         allNodes={allNodes}
         currentKey={currentKey}
         onChange={(v) => onUpdateConfig({ next_node_key: v })}
-        label="Then advance to"
+        label="Depois, avança para"
       />
     </>
   );
@@ -897,7 +897,7 @@ function SendMediaForm({
     async (file: File) => {
       if (file.size > MEDIA_MAX_BYTES) {
         toast.error(
-          `File is ${(file.size / 1024 / 1024).toFixed(1)} MB — limit is 16 MB.`,
+          `O arquivo tem ${(file.size / 1024 / 1024).toFixed(1)} MB — o limite é 16 MB.`,
         );
         return;
       }
@@ -914,7 +914,7 @@ function SendMediaForm({
         });
         toast.success("Arquivo enviado.");
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Upload failed.";
+        const msg = err instanceof Error ? err.message : "Falha no envio.";
         toast.error(msg);
       } finally {
         setUploading(false);
@@ -951,7 +951,7 @@ function SendMediaForm({
             <SelectItem value="image">Imagem (PNG, JPEG, WebP)</SelectItem>
             <SelectItem value="video">Vídeo (MP4, 3GP)</SelectItem>
             <SelectItem value="document">
-              Document (PDF, Word, Excel, PowerPoint, TXT)
+              Documento (PDF, Word, Excel, PowerPoint, TXT)
             </SelectItem>
           </SelectContent>
         </Select>
@@ -1041,7 +1041,7 @@ function SendMediaForm({
         allNodes={allNodes}
         currentKey={currentKey}
         onChange={(v) => onUpdateConfig({ next_node_key: v })}
-        label="After sending, advance to"
+        label="Após enviar, avança para"
       />
     </>
   );

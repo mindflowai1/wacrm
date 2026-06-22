@@ -12,7 +12,7 @@ export function SecurityPanel() {
   return (
     <section className="max-w-2xl animate-in fade-in-50 duration-200">
       <SettingsPanelHead
-        title="Login & security"
+        title="Login e segurança"
         description="Altere sua senha e saia dos seus dispositivos. Isso mantém sua conta segura."
       />
       <div className="space-y-4">

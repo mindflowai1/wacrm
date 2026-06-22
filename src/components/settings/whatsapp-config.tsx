@@ -391,7 +391,7 @@ export function WhatsAppConfig() {
               <AlertTriangle className="size-5 text-amber-400 mt-0.5 shrink-0" />
               <div className="flex-1">
                 <AlertTitle className="text-amber-200 mb-1">
-                  Stored token can&apos;t be decrypted
+                  O token armazenado não pode ser descriptografado
                 </AlertTitle>
                 <AlertDescription className="text-amber-100/80 text-sm">
                   {statusMessage}
@@ -428,14 +428,14 @@ export function WhatsAppConfig() {
               <XCircle className="size-4 text-red-500" />
             )}
             <AlertTitle className="text-foreground mb-0">
-              {connectionStatus === 'connected' ? 'Credentials valid' : 'Not Connected'}
+              {connectionStatus === 'connected' ? 'Credenciais válidas' : 'Não Conectado'}
             </AlertTitle>
           </div>
           <AlertDescription className="text-muted-foreground">
             {connectionStatus === 'connected'
-              ? 'Your access token authenticates with Meta. See Registration status below for whether webhooks are actually wired.'
+              ? 'Seu token de acesso autentica com a Meta. Veja o status de registro abaixo para saber se os webhooks estão de fato conectados.'
               : statusMessage ||
-                'Configure your Meta API credentials below to connect your WhatsApp Business account.'}
+                'Configure suas credenciais da API da Meta abaixo para conectar sua conta do WhatsApp Business.'}
           </AlertDescription>
         </Alert>
 
@@ -465,8 +465,8 @@ export function WhatsAppConfig() {
                   }
                 >
                   {isRegistered
-                    ? 'Registered — Meta will deliver events to wacrm'
-                    : 'Not registered — Meta will not deliver events'}
+                    ? 'Registrado — a Meta enviará eventos ao wacrm'
+                    : 'Não registrado — a Meta não enviará eventos'}
                 </AlertTitle>
               </div>
               <Button
@@ -481,34 +481,34 @@ export function WhatsAppConfig() {
                 ) : (
                   <Zap className="size-3.5" />
                 )}
-                Verify with Meta
+                Verificar com a Meta
               </Button>
             </div>
             <AlertDescription className="text-muted-foreground mt-2 text-xs leading-relaxed">
               {isRegistered ? (
                 <>
-                  Subscribed since{' '}
+                  Inscrito desde{' '}
                   {config.registered_at
-                    ? new Date(config.registered_at).toLocaleString()
-                    : 'unknown'}
-                  . Click <strong>Verificar com a Meta</strong> if events
-                  stop arriving.
+                    ? new Date(config.registered_at).toLocaleString('pt-BR')
+                    : 'desconhecido'}
+                  . Clique em <strong>Verificar com a Meta</strong> se os
+                  eventos pararem de chegar.
                 </>
               ) : lastRegistrationError ? (
                 <>
-                  Last attempt failed with:{' '}
+                  A última tentativa falhou com:{' '}
                   <span className="text-red-300">
                     &quot;{lastRegistrationError}&quot;
                   </span>
-                  . Enter (or correct) the 2-step PIN below and click
-                  Save Configuration to retry.
+                  . Informe (ou corrija) o PIN de verificação em duas etapas
+                  abaixo e clique em Salvar Configuração para tentar de novo.
                 </>
               ) : (
                 <>
-                  This number was saved before registration tracking
-                  existed, or registration was skipped. Enter the
-                  2-step PIN below and click Save Configuration to
-                  subscribe it.
+                  Este número foi salvo antes de existir o rastreamento de
+                  registro, ou o registro foi pulado. Informe o PIN de
+                  verificação em duas etapas abaixo e clique em Salvar
+                  Configuração para inscrevê-lo.
                 </>
               )}
             </AlertDescription>
@@ -516,9 +516,9 @@ export function WhatsAppConfig() {
             {registrationProbe && (
               <div className="mt-3 rounded border border-border bg-card/60 px-3 py-2 space-y-1.5 text-[11px]">
                 <p className="font-medium text-foreground">
-                  Diagnostic — last run: {' '}
+                  Diagnóstico — última execução: {' '}
                   <span className={registrationProbe.live ? 'text-emerald-400' : 'text-amber-400'}>
-                    {registrationProbe.live ? 'live' : 'not live'}
+                    {registrationProbe.live ? 'ativo' : 'inativo'}
                   </span>
                 </p>
                 <ul className="space-y-0.5 text-muted-foreground">
@@ -559,7 +559,7 @@ export function WhatsAppConfig() {
             <div className="space-y-2">
               <Label className="text-muted-foreground">ID do Número de Telefone</Label>
               <Input
-                placeholder="e.g. 100234567890123"
+                placeholder="ex.: 100234567890123"
                 value={phoneNumberId}
                 onChange={(e) => setPhoneNumberId(e.target.value)}
                 className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
@@ -569,7 +569,7 @@ export function WhatsAppConfig() {
             <div className="space-y-2">
               <Label className="text-muted-foreground">ID da conta WhatsApp Business</Label>
               <Input
-                placeholder="e.g. 100234567890456"
+                placeholder="ex.: 100234567890456"
                 value={wabaId}
                 onChange={(e) => setWabaId(e.target.value)}
                 className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
@@ -626,7 +626,7 @@ export function WhatsAppConfig() {
             <div className="space-y-2">
               <Label className="text-muted-foreground">
                 PIN de verificação em duas etapas
-                <span className="ml-1 text-muted-foreground">(optional)</span>
+                <span className="ml-1 text-muted-foreground">(opcional)</span>
               </Label>
               <Input
                 type="text"
@@ -640,20 +640,20 @@ export function WhatsAppConfig() {
                 className="bg-muted border-border text-foreground placeholder:text-muted-foreground tracking-widest"
               />
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Needed only to wire <strong className="text-muted-foreground">inbound</strong> messages
-                for a <strong className="text-muted-foreground">production</strong> number. Set it in{' '}
+                Necessário apenas para conectar mensagens <strong className="text-muted-foreground">recebidas</strong>
+                de um número de <strong className="text-muted-foreground">produção</strong>. Defina-o em{' '}
                 <strong className="text-muted-foreground">
                   Meta Business Manager → WhatsApp Accounts → Phone
                   Numbers → Two-step verification
                 </strong>
-                , then paste it here so wacrm can subscribe the number —
-                otherwise Meta routes inbound events to whichever app
-                last claimed it (the symptom that hits second numbers
-                under a shared WABA).{' '}
-                <strong className="text-muted-foreground">Números de teste da Meta</strong> have no
-                PIN and are pre-registered — leave this blank for them.
-                Leaving it blank also keeps an existing registration
-                untouched.
+                , depois cole-o aqui para que o wacrm possa inscrever o
+                número — caso contrário, a Meta roteia os eventos recebidos
+                para o app que reivindicou o número por último (o sintoma
+                que afeta números secundários numa WABA compartilhada).{' '}
+                <strong className="text-muted-foreground">Números de teste da Meta</strong> não têm
+                PIN e já vêm pré-registrados — deixe em branco para eles.
+                Deixar em branco também mantém um registro existente
+                intacto.
               </p>
             </div>
           </CardContent>
@@ -702,7 +702,7 @@ export function WhatsAppConfig() {
                 Salvando...
               </>
             ) : (
-              'Save Configuration'
+              'Salvar Configuração'
             )}
           </Button>
           <Button
@@ -766,7 +766,7 @@ export function WhatsAppConfig() {
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
                   <ol className="list-decimal list-inside space-y-1 text-sm">
-                    <li>Go to <span className="text-primary">developers.facebook.com</span></li>
+                    <li>Acesse <span className="text-primary">developers.facebook.com</span></li>
                     <li>Clique em &quot;My Apps&quot; e depois em &quot;Create App&quot;</li>
                     <li>Selecione &quot;Business&quot; como tipo de app</li>
                     <li>Preencha os detalhes do app e crie</li>
@@ -800,9 +800,9 @@ export function WhatsAppConfig() {
                 <AccordionContent className="text-muted-foreground">
                   <ol className="list-decimal list-inside space-y-1 text-sm">
                     <li>Vá em WhatsApp &gt; API Setup</li>
-                    <li>Copy your <strong className="text-foreground">ID do Número de Telefone</strong></li>
-                    <li>Copy your <strong className="text-foreground">ID da conta WhatsApp Business</strong></li>
-                    <li>Generate a <strong className="text-foreground">Token de Acesso Permanente</strong> em Business Settings &gt; System Users</li>
+                    <li>Copie seu <strong className="text-foreground">ID do Número de Telefone</strong></li>
+                    <li>Copie seu <strong className="text-foreground">ID da conta WhatsApp Business</strong></li>
+                    <li>Gere um <strong className="text-foreground">Token de Acesso Permanente</strong> em Business Settings &gt; System Users</li>
                   </ol>
                 </AccordionContent>
               </AccordionItem>
@@ -818,8 +818,8 @@ export function WhatsAppConfig() {
                   <ol className="list-decimal list-inside space-y-1 text-sm">
                     <li>Vá em WhatsApp &gt; Configuration</li>
                     <li>Clique em &quot;Edit&quot; na seção Webhook</li>
-                    <li>Paste the <strong className="text-foreground">URL de Callback do Webhook</strong> from above</li>
-                    <li>Enter the same <strong className="text-foreground">Verify Token</strong> you set here</li>
+                    <li>Cole a <strong className="text-foreground">URL de Callback do Webhook</strong> de cima</li>
+                    <li>Informe o mesmo <strong className="text-foreground">Verify Token</strong> que você definiu aqui</li>
                     <li>Inscreva-se no campo de webhook &quot;messages&quot;</li>
                   </ol>
                 </AccordionContent>

@@ -55,9 +55,9 @@ interface FlowRow {
 }
 
 const STATUS_LABELS: Record<FlowRow["status"], string> = {
-  draft: "Draft",
-  active: "Active",
-  archived: "Archived",
+  draft: "Rascunho",
+  active: "Ativo",
+  archived: "Arquivado",
 };
 
 const STATUS_COLORS: Record<FlowRow["status"], string> = {
@@ -115,7 +115,7 @@ export default function FlowsPage() {
       } catch (err) {
         if (!cancelled) {
           console.error(err);
-          toast.error("Couldn't load flows.");
+          toast.error("Não foi possível carregar os fluxos.");
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -146,7 +146,7 @@ export default function FlowsPage() {
       router.push(`/flows/${json.flow.id}`);
     } catch (err) {
       console.error(err);
-      toast.error("Couldn't create flow.");
+      toast.error("Não foi possível criar o fluxo.");
     } finally {
       setCreating(false);
     }
@@ -168,7 +168,7 @@ export default function FlowsPage() {
       setCreateOpen(false);
       router.push(`/flows/${json.flow.id}`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Clone failed";
+      const msg = err instanceof Error ? err.message : "Falha ao clonar";
       toast.error(msg);
     } finally {
       setCreating(false);
@@ -177,7 +177,7 @@ export default function FlowsPage() {
 
   async function handleDelete(flow: FlowRow) {
     const yes = window.confirm(
-      `Delete "${flow.name}"? Any active runs will end immediately.`,
+      `Excluir "${flow.name}"? Quaisquer execuções ativas serão encerradas imediatamente.`,
     );
     if (!yes) return;
     try {
@@ -187,7 +187,7 @@ export default function FlowsPage() {
       toast.success("Fluxo excluído.");
     } catch (err) {
       console.error(err);
-      toast.error("Couldn't delete flow.");
+      toast.error("Não foi possível excluir o fluxo.");
     }
   }
 
@@ -210,13 +210,13 @@ export default function FlowsPage() {
             </span>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Build branching, button-driven WhatsApp conversations. Useful for
-            menus, FAQs, and triage before a human steps in.
+            Crie conversas ramificadas no WhatsApp, guiadas por botões. Útil
+            para menus, FAQs e triagem antes de um humano entrar em ação.
           </p>
         </div>
         <GatedButton
           canAct={canCreate}
-          gateReason="create flows"
+          gateReason="criar fluxos"
           onClick={() => setCreateOpen(true)}
         >
           <Plus className="h-4 w-4" />
@@ -279,7 +279,7 @@ export default function FlowsPage() {
                         {t.description}
                       </span>
                       <span className="mt-auto border-t border-border pt-2 text-[11px] text-muted-foreground">
-                        {t.node_count} {t.node_count === 1 ? "node" : "nodes"}
+                        {t.node_count} {t.node_count === 1 ? "nó" : "nós"}
                       </span>
                     </button>
                   );
@@ -295,7 +295,7 @@ export default function FlowsPage() {
             <Input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="e.g. Welcome menu"
+              placeholder="ex.: Menu de boas-vindas"
               className="bg-muted"
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleCreate();
@@ -313,7 +313,7 @@ export default function FlowsPage() {
             </Button>
             <Button onClick={handleCreate} disabled={!newName.trim() || creating}>
               {creating && <Loader2 className="h-4 w-4 animate-spin" />}
-              Create blank flow
+              Criar fluxo em branco
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -338,13 +338,13 @@ function EmptyState({
         Nenhum fluxo ainda
       </h2>
       <p className="mt-1 max-w-md text-sm text-muted-foreground">
-        Build your first conversation — a welcome menu, an order lookup, an FAQ
-        bot. Customers tap buttons; the bot routes them to the right answer (or
-        the right agent).
+        Crie sua primeira conversa — um menu de boas-vindas, uma consulta de
+        pedido, um bot de FAQ. Os clientes tocam em botões e o bot os
+        direciona para a resposta certa (ou o agente certo).
       </p>
       <GatedButton
         canAct={canCreate}
-        gateReason="create flows"
+        gateReason="criar fluxos"
         onClick={onCreate}
         className="mt-5"
       >
@@ -399,7 +399,7 @@ function FlowCard({
       <div className="mt-4 flex items-center gap-3 text-[11px] text-muted-foreground">
         <span className="inline-flex items-center gap-1">
           <MessageSquare className="h-3 w-3" />
-          {flow.execution_count} {flow.execution_count === 1 ? "run" : "runs"}
+          {flow.execution_count} {flow.execution_count === 1 ? "execução" : "execuções"}
         </span>
       </div>
 
@@ -427,11 +427,11 @@ function describeTrigger(flow: FlowRow): string {
     const keywords = Array.isArray(flow.trigger_config.keywords)
       ? (flow.trigger_config.keywords as string[])
       : [];
-    if (keywords.length === 0) return "Triggers on keyword (none set)";
-    return `Triggers on: ${keywords.join(", ")}`;
+    if (keywords.length === 0) return "Disparado por palavra-chave (nenhuma definida)";
+    return `Disparado por: ${keywords.join(", ")}`;
   }
   if (flow.trigger_type === "first_inbound_message") {
-    return "Triggers on a contact's first-ever inbound message";
+    return "Disparado na primeira mensagem recebida de um contato";
   }
-  return "Manual trigger";
+  return "Disparo manual";
 }

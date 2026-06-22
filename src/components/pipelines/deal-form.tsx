@@ -184,7 +184,7 @@ export function DealForm({
       } = await supabase.auth.getSession();
       const user = session?.user;
       if (!user) {
-        toast.error("Not signed in");
+        toast.error("Não autenticado");
         setSaving(false);
         return;
       }
@@ -204,7 +204,7 @@ export function DealForm({
     }
 
     setSaving(false);
-    toast.success(deal ? "Deal updated" : "Deal created");
+    toast.success(deal ? "Negócio atualizado" : "Negócio criado");
     onOpenChange(false);
     onSaved();
   }
@@ -222,7 +222,7 @@ export function DealForm({
       return;
     }
     toast.success(
-      status === "won" ? "Marked as won" : status === "lost" ? "Marked as lost" : "Deal reopened",
+      status === "won" ? "Marcado como ganho" : status === "lost" ? "Marcado como perdido" : "Negócio reaberto",
     );
     onOpenChange(false);
     onSaved();
@@ -252,7 +252,7 @@ export function DealForm({
         <div className="flex h-full flex-col">
           <SheetHeader className="border-b border-border/50 p-4">
             <SheetTitle className="text-popover-foreground">
-              {deal ? "Edit Deal" : "New Deal"}
+              {deal ? "Editar Negócio" : "Novo Negócio"}
             </SheetTitle>
           </SheetHeader>
 
@@ -268,7 +268,7 @@ export function DealForm({
             </div>
 
             <div className="grid gap-2">
-              <Label className="text-muted-foreground">Contact</Label>
+              <Label className="text-muted-foreground">Contato</Label>
               <select
                 value={contactId}
                 onChange={(e) => setContactId(e.target.value)}
@@ -308,7 +308,7 @@ export function DealForm({
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label className="text-muted-foreground">Currency</Label>
+                <Label className="text-muted-foreground">Moeda</Label>
                 <select
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
@@ -440,7 +440,7 @@ export function DealForm({
                 disabled={saving || !title.trim() || !contactId || !stageId}
                 className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                {saving ? "Salvando..." : deal ? "Save Changes" : "Create Deal"}
+                {saving ? "Salvando..." : deal ? "Salvar Alterações" : "Criar Negócio"}
               </Button>
             </div>
 
@@ -463,7 +463,7 @@ export function DealForm({
                       disabled={deleting}
                       className="rounded bg-red-600 px-2 py-1 font-medium text-white hover:bg-red-700 disabled:opacity-50"
                     >
-                      {deleting ? "Excluindo..." : "Confirm"}
+                      {deleting ? "Excluindo..." : "Confirmar"}
                     </button>
                   </div>
                 </div>

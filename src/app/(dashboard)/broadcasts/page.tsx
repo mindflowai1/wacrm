@@ -77,7 +77,7 @@ export default function BroadcastsPage() {
       if (fetchError) throw fetchError;
       setBroadcasts(data ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load broadcasts');
+      setError(err instanceof Error ? err.message : 'Falha ao carregar transmissões');
     } finally {
       setLoading(false);
     }
@@ -141,7 +141,7 @@ export default function BroadcastsPage() {
       <div className="flex h-64 flex-col items-center justify-center gap-2">
         <p className="text-sm text-red-400">{error}</p>
         <Button variant="outline" onClick={() => window.location.reload()}>
-          Retry
+          Tentar novamente
         </Button>
       </div>
     );
@@ -186,7 +186,7 @@ export default function BroadcastsPage() {
         </div>
         <GatedButton
           canAct={canCreate}
-          gateReason="create broadcasts"
+          gateReason="criar transmissões"
           onClick={() => router.push('/broadcasts/new')}
           className="bg-primary text-primary-foreground hover:bg-primary/90"
         >
@@ -204,7 +204,7 @@ export default function BroadcastsPage() {
           </p>
           <GatedButton
             canAct={canCreate}
-            gateReason="create broadcasts"
+            gateReason="criar transmissões"
             onClick={() => router.push('/broadcasts/new')}
             className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
           >
@@ -223,7 +223,7 @@ export default function BroadcastsPage() {
                   Destinatários
                 </TableHead>
                 <TableHead className="hidden text-muted-foreground lg:table-cell">Entrega</TableHead>
-                <TableHead className="hidden text-muted-foreground lg:table-cell">Read</TableHead>
+                <TableHead className="hidden text-muted-foreground lg:table-cell">Leitura</TableHead>
                 <TableHead className="text-muted-foreground">Status</TableHead>
                 <TableHead className="hidden text-muted-foreground sm:table-cell">Data</TableHead>
               </TableRow>
@@ -274,7 +274,7 @@ export default function BroadcastsPage() {
                       </span>
                     </TableCell>
                     <TableCell className="hidden text-muted-foreground sm:table-cell">
-                      {new Date(broadcast.created_at).toLocaleDateString()}
+                      {new Date(broadcast.created_at).toLocaleDateString('pt-BR')}
                     </TableCell>
                   </TableRow>
                 );

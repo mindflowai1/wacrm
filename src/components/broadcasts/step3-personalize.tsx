@@ -30,10 +30,10 @@ interface Step3Props {
 }
 
 const contactFields = [
-  { value: 'name', label: 'Contact Name' },
-  { value: 'phone', label: 'Phone Number' },
-  { value: 'email', label: 'Email Address' },
-  { value: 'company', label: 'Company' },
+  { value: 'name', label: 'Nome do Contato' },
+  { value: 'phone', label: 'Número de Telefone' },
+  { value: 'email', label: 'Endereço de E-mail' },
+  { value: 'company', label: 'Empresa' },
 ];
 
 const SAMPLE_CONTACT: Contact = {
@@ -182,15 +182,15 @@ export function Step3Personalize({
 
   const previewLabel = firstContact
     ? firstContact.name || firstContact.phone
-    : 'sample data';
+    : 'dados de exemplo';
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-semibold text-foreground">Personalizar Mensagem</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Map template variables to contact fields, custom fields, or static
-          values.
+          Associe as variáveis do modelo a campos do contato, campos
+          personalizados ou valores estáticos.
         </p>
       </div>
 
@@ -246,7 +246,7 @@ export function Step3Personalize({
 
                   <div>
                     <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                      {mapping.type === 'static' ? 'Value' : 'Field'}
+                      {mapping.type === 'static' ? 'Valor' : 'Campo'}
                     </label>
                     {mapping.type === 'static' ? (
                       <Input
@@ -286,10 +286,10 @@ export function Step3Personalize({
                           <SelectValue
                             placeholder={
                               loadingFields
-                                ? 'Loading…'
+                                ? 'Carregando…'
                                 : customFields.length === 0
-                                  ? 'No custom fields'
-                                  : 'Select custom field…'
+                                  ? 'Nenhum campo personalizado'
+                                  : 'Selecione o campo personalizado…'
                             }
                           />
                         </SelectTrigger>
@@ -332,11 +332,11 @@ export function Step3Personalize({
 
       {unmappedKeys.length > 0 && (
         <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
-          Map every placeholder before continuing — still missing{' '}
+          Associe cada variável antes de continuar — ainda faltam{' '}
           <span className="font-mono font-semibold">
             {unmappedKeys.join(', ')}
           </span>
-          . Otherwise those placeholders will ship to Meta as empty strings.
+          . Caso contrário, essas variáveis serão enviadas à Meta como texto vazio.
         </div>
       )}
 

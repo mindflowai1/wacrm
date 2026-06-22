@@ -19,7 +19,7 @@ export function FieldsAndTagsPanel() {
   return (
     <section className="max-w-3xl animate-in fade-in-50 space-y-4 duration-200">
       <SettingsPanelHead
-        title="Fields & tags"
+        title="Campos e etiquetas"
         description="Duas formas de organizar contatos: etiquetas coloridas para agrupar rápido e campos personalizados para dados estruturados."
       />
       <TagManager />

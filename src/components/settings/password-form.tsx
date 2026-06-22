@@ -36,11 +36,11 @@ export function PasswordForm() {
       return;
     }
     if (next.length < MIN_PASSWORD) {
-      setConfirmError(`Password must be at least ${MIN_PASSWORD} characters`);
+      setConfirmError(`A senha deve ter pelo menos ${MIN_PASSWORD} caracteres`);
       return;
     }
     if (next !== confirm) {
-      setConfirmError('New password and confirmation do not match');
+      setConfirmError('A nova senha e a confirmação não coincidem');
       return;
     }
     setConfirmError(null);
@@ -64,7 +64,7 @@ export function PasswordForm() {
         password: next,
       });
       if (updateError) {
-        toast.error(`Password update failed: ${updateError.message}`);
+        toast.error(`Falha ao atualizar a senha: ${updateError.message}`);
         return;
       }
 
@@ -73,7 +73,7 @@ export function PasswordForm() {
       setConfirm('');
       toast.success('Senha atualizada');
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
+      const msg = err instanceof Error ? err.message : 'Erro desconhecido';
       toast.error(msg);
     } finally {
       setSaving(false);
@@ -85,11 +85,11 @@ export function PasswordForm() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-foreground">
           <KeyRound className="size-4 text-primary" />
-          Password
+          Senha
         </CardTitle>
         <CardDescription className="text-muted-foreground">
-          Use at least {MIN_PASSWORD} characters. You will stay signed in on
-          this device after changing it.
+          Use pelo menos {MIN_PASSWORD} caracteres. Você continuará conectado
+          neste dispositivo depois de alterá-la.
         </CardDescription>
       </CardHeader>
 
@@ -160,7 +160,7 @@ export function PasswordForm() {
                   Atualizando…
                 </>
               ) : (
-                'Update password'
+                'Atualizar senha'
               )}
             </Button>
           </div>

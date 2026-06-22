@@ -79,9 +79,9 @@ interface Invitation {
 // Editable roles in the inline dropdown. Owner is never an option —
 // promotions go through the (deferred) Transfer Ownership flow.
 const EDITABLE_ROLES: { value: AccountRole; label: string; hint: string }[] = [
-  { value: 'admin', label: 'Admin', hint: 'Manage members + everything' },
-  { value: 'agent', label: 'Agent', hint: 'Use features; no settings' },
-  { value: 'viewer', label: 'Viewer', hint: 'Read-only across the app' },
+  { value: 'admin', label: 'Admin', hint: 'Gerencia membros e tudo mais' },
+  { value: 'agent', label: 'Agente', hint: 'Usa os recursos; sem acesso a configurações' },
+  { value: 'viewer', label: 'Visualizador', hint: 'Somente leitura em todo o app' },
 ];
 
 // Per-role chip metadata (icon / label / colour) lives in the shared
@@ -101,11 +101,11 @@ function fmtDate(iso: string): string {
 
 function fmtExpiresIn(iso: string): string {
   const ms = new Date(iso).getTime() - Date.now();
-  if (ms <= 0) return 'expired';
+  if (ms <= 0) return 'expirado';
   const days = Math.floor(ms / (24 * 60 * 60 * 1000));
-  if (days >= 1) return `expires in ${days} day${days === 1 ? '' : 's'}`;
+  if (days >= 1) return `expira em ${days} dia${days === 1 ? '' : 's'}`;
   const hours = Math.max(1, Math.floor(ms / (60 * 60 * 1000)));
-  return `expires in ${hours} hour${hours === 1 ? '' : 's'}`;
+  return `expira em ${hours} hora${hours === 1 ? '' : 's'}`;
 }
 
 export function MembersTab() {
@@ -132,7 +132,7 @@ export function MembersTab() {
 
       if (!mres.ok) {
         const payload = await mres.json().catch(() => ({}));
-        toast.error(payload.error || 'Failed to load members');
+        toast.error(payload.error || 'Falha ao carregar os membros');
         return;
       }
       const mdata = (await mres.json()) as { members: Member[] };
@@ -141,7 +141,7 @@ export function MembersTab() {
       if (ires) {
         if (!ires.ok) {
           const payload = await ires.json().catch(() => ({}));
-          toast.error(payload.error || 'Failed to load invitations');
+          toast.error(payload.error || 'Falha ao carregar os convites');
           return;
         }
         const idata = (await ires.json()) as { invitations: Invitation[] };
@@ -151,7 +151,7 @@ export function MembersTab() {
       }
     } catch (err) {
       console.error('[MembersTab] load error:', err);
-      toast.error('Could not reach the server');
+      toast.error('Não foi possível conectar ao servidor');
     } finally {
       setLoading(false);
     }
@@ -191,10 +191,10 @@ export function MembersTab() {
           ),
         );
         const payload = await res.json().catch(() => ({}));
-        toast.error(payload.error || 'Failed to update role');
+        toast.error(payload.error || 'Falha ao atualizar o papel');
         return;
       }
-      toast.success(`Updated ${member.full_name || 'member'} to ${nextRole}`);
+      toast.success(`${member.full_name || 'Membro'} atualizado para ${nextRole}`);
     } catch (err) {
       // Same revert on network failure.
       setMembers((prev) =>
@@ -203,7 +203,7 @@ export function MembersTab() {
         ),
       );
       console.error('[MembersTab] role change error:', err);
-      toast.error('Could not reach the server');
+      toast.error('Não foi possível conectar ao servidor');
     } finally {
       setPendingMemberAction(null);
     }
@@ -219,17 +219,17 @@ export function MembersTab() {
       );
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}));
-        toast.error(payload.error || 'Failed to remove member');
+        toast.error(payload.error || 'Falha ao remover o membro');
         return;
       }
-      toast.success(`Removed ${removingMember.full_name || 'member'}`);
+      toast.success(`${removingMember.full_name || 'Membro'} removido`);
       setMembers((prev) =>
         prev.filter((m) => m.user_id !== removingMember.user_id),
       );
       setRemovingMember(null);
     } catch (err) {
       console.error('[MembersTab] remove error:', err);
-      toast.error('Could not reach the server');
+      toast.error('Não foi possível conectar ao servidor');
     } finally {
       setPendingMemberAction(null);
     }
@@ -242,14 +242,14 @@ export function MembersTab() {
       });
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}));
-        toast.error(payload.error || 'Failed to revoke invitation');
+        toast.error(payload.error || 'Falha ao revogar o convite');
         return;
       }
       toast.success('Convite revogado');
       setInvitations((prev) => prev.filter((i) => i.id !== invite.id));
     } catch (err) {
       console.error('[MembersTab] revoke error:', err);
-      toast.error('Could not reach the server');
+      toast.error('Não foi possível conectar ao servidor');
     }
   }
 
@@ -315,11 +315,11 @@ export function MembersTab() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="truncate text-sm font-medium text-foreground">
-                          {member.full_name || 'Unnamed'}
+                          {member.full_name || 'Sem nome'}
                         </span>
                         {isSelf && (
                           <Badge className="bg-muted text-muted-foreground border-border text-[10px] uppercase tracking-wide">
-                            You
+                            Você
                           </Badge>
                         )}
                       </div>
@@ -334,7 +334,7 @@ export function MembersTab() {
                   {/* Joined date stays desktop-only. The mobile row's
                       vertical density makes the joined date noise. */}
                   <div className="hidden sm:block text-right text-xs text-muted-foreground">
-                    Joined {fmtDate(member.joined_at)}
+                    Entrou em {fmtDate(member.joined_at)}
                   </div>
 
                   {/* Actions cluster. On mobile this is its own row
@@ -424,9 +424,9 @@ export function MembersTab() {
               looking for a button) keeps it from feeling like a bug. */}
           {invitations.length > 0 ? (
             <p className="mb-3 text-xs text-muted-foreground">
-              The plaintext invite URL is only shown once at creation
-              for security — to re-share, revoke the invite below and
-              create a new one.
+              Por segurança, a URL do convite só é exibida uma vez, no
+              momento da criação — para compartilhar de novo, revogue o
+              convite abaixo e crie um novo.
             </p>
           ) : null}
 
@@ -438,8 +438,8 @@ export function MembersTab() {
                   Nenhum convite pendente.
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Click <span className="text-muted-foreground">Convidar membro</span>{' '}
-                  above to generate a shareable link.
+                  Clique em <span className="text-muted-foreground">Convidar membro</span>{' '}
+                  acima para gerar um link compartilhável.
                 </p>
               </CardContent>
             </Card>
@@ -458,7 +458,7 @@ export function MembersTab() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-foreground">
-                            {inv.label || 'Untitled invite'}
+                            {inv.label || 'Convite sem título'}
                           </span>
                           <span
                             className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium ${inviteRoleMeta.className}`}
@@ -468,7 +468,7 @@ export function MembersTab() {
                           </span>
                         </div>
                         <p className="mt-0.5 text-xs text-muted-foreground">
-                          Created {fmtDate(inv.created_at)} · {fmtExpiresIn(inv.expires_at)}
+                          Criado em {fmtDate(inv.created_at)} · {fmtExpiresIn(inv.expires_at)}
                         </p>
                       </div>
 
@@ -514,13 +514,13 @@ export function MembersTab() {
               Remover membro
             </DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Remove{' '}
+              Remover{' '}
               <span className="font-medium text-muted-foreground">
-                {removingMember?.full_name || 'this teammate'}
+                {removingMember?.full_name || 'este colega'}
               </span>{' '}
-              from the account? They&apos;ll be signed out of this account
-              and given a fresh personal account on their next sign-in. Their
-              login isn&apos;t deleted.
+              da conta? A sessão dele será encerrada nesta conta e ele
+              receberá uma conta pessoal nova no próximo login. O login dele
+              não será excluído.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="bg-popover border-border">

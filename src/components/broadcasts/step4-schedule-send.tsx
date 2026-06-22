@@ -83,17 +83,17 @@ export function Step4ScheduleSend({
 
   const audienceLabel =
     audience.type === 'all'
-      ? 'All Contacts'
+      ? 'Todos os Contatos'
       : audience.type === 'tags'
-        ? `Tags (${audience.tagIds?.length ?? 0} selected)`
+        ? `Etiquetas (${audience.tagIds?.length ?? 0} selecionadas)`
         : audience.type === 'csv'
-          ? 'CSV Upload'
-          : 'Custom';
+          ? 'Upload de CSV'
+          : 'Personalizado';
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Review & Send</h2>
+        <h2 className="text-lg font-semibold text-foreground">Revisar e Enviar</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Dê um nome à transmissão, revise os detalhes e envie.
         </p>
@@ -105,7 +105,7 @@ export function Step4ScheduleSend({
         <Input
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
-          placeholder="e.g. Summer Sale Announcement"
+          placeholder="ex.: Anúncio de Promoção de Verão"
           className="border-border bg-muted text-foreground placeholder:text-muted-foreground"
         />
       </div>
@@ -115,7 +115,7 @@ export function Step4ScheduleSend({
         <p className="text-sm font-medium text-foreground">Resumo</p>
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
-            <p className="text-xs text-muted-foreground">Template</p>
+            <p className="text-xs text-muted-foreground">Modelo</p>
             <p className="text-foreground">{template.name}</p>
           </div>
           <div>
@@ -201,11 +201,11 @@ export function Step4ScheduleSend({
             <DialogHeader>
               <DialogTitle className="text-popover-foreground">Confirmar Transmissão</DialogTitle>
               <DialogDescription className="text-muted-foreground">
-                You are about to send this broadcast to{' '}
+                Você está prestes a enviar esta transmissão para{' '}
                 <span className="font-medium text-popover-foreground">{estimatedReach.toLocaleString()}</span>{' '}
-                contacts using the{' '}
-                <span className="font-medium text-popover-foreground">{template.name}</span> template.
-                This action cannot be undone.
+                contatos usando o modelo{' '}
+                <span className="font-medium text-popover-foreground">{template.name}</span>.
+                Esta ação não pode ser desfeita.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -224,7 +224,7 @@ export function Step4ScheduleSend({
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <Send className="h-4 w-4" />
-                Confirm & Send
+                Confirmar e Enviar
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -70,7 +70,7 @@ export function DealsSettings() {
   return (
     <section className="max-w-2xl animate-in fade-in-50 duration-200">
       <SettingsPanelHead
-        title="Deals & currency"
+        title="Negócios e moeda"
         description="A moeda usada em novos negócios e nos totais do funil e do painel."
       />
       <Card>
@@ -119,7 +119,7 @@ export function DealsSettings() {
                   Salvando...
                 </>
               ) : (
-                "Save"
+                "Salvar"
               )}
             </Button>
           )}

@@ -88,17 +88,17 @@ interface StepMeta {
 }
 
 const STEP_META: Record<AutomationStepType, StepMeta> = {
-  send_message: { label: "Send Message", icon: MessageSquare, border: "border-l-primary" },
-  send_template: { label: "Send Template", icon: FileText, border: "border-l-primary" },
-  add_tag: { label: "Add Tag", icon: Tag, border: "border-l-primary" },
-  remove_tag: { label: "Remove Tag", icon: TagIcon, border: "border-l-primary" },
-  assign_conversation: { label: "Assign Conversation", icon: UserCheck, border: "border-l-primary" },
-  update_contact_field: { label: "Update Contact Field", icon: PencilLine, border: "border-l-primary" },
-  create_deal: { label: "Create Deal", icon: Briefcase, border: "border-l-primary" },
-  wait: { label: "Wait", icon: Hourglass, border: "border-l-border" },
-  condition: { label: "Condition (If/Else)", icon: GitBranch, border: "border-l-amber-500" },
-  send_webhook: { label: "Send Webhook", icon: Webhook, border: "border-l-primary" },
-  close_conversation: { label: "Close Conversation", icon: CircleSlash, border: "border-l-primary" },
+  send_message: { label: "Enviar Mensagem", icon: MessageSquare, border: "border-l-primary" },
+  send_template: { label: "Enviar Modelo", icon: FileText, border: "border-l-primary" },
+  add_tag: { label: "Adicionar Etiqueta", icon: Tag, border: "border-l-primary" },
+  remove_tag: { label: "Remover Etiqueta", icon: TagIcon, border: "border-l-primary" },
+  assign_conversation: { label: "Atribuir Conversa", icon: UserCheck, border: "border-l-primary" },
+  update_contact_field: { label: "Atualizar Campo do Contato", icon: PencilLine, border: "border-l-primary" },
+  create_deal: { label: "Criar Negócio", icon: Briefcase, border: "border-l-primary" },
+  wait: { label: "Aguardar", icon: Hourglass, border: "border-l-border" },
+  condition: { label: "Condição (Se/Senão)", icon: GitBranch, border: "border-l-amber-500" },
+  send_webhook: { label: "Enviar Webhook", icon: Webhook, border: "border-l-primary" },
+  close_conversation: { label: "Fechar Conversa", icon: CircleSlash, border: "border-l-primary" },
 }
 
 const ADDABLE_STEPS: AutomationStepType[] = [
@@ -116,17 +116,17 @@ const ADDABLE_STEPS: AutomationStepType[] = [
 ]
 
 const TRIGGER_OPTIONS: { value: AutomationTriggerType; label: string; hint: string }[] = [
-  { value: "new_message_received", label: "New Message Received", hint: "Any incoming message" },
+  { value: "new_message_received", label: "Nova Mensagem Recebida", hint: "Qualquer mensagem recebida" },
   {
     value: "first_inbound_message",
-    label: "First Message from Contact",
-    hint: "First time this contact ever messages you (works for manually-added contacts too)",
+    label: "Primeira Mensagem do Contato",
+    hint: "Primeira vez que este contato te envia mensagem (funciona também para contatos adicionados manualmente)",
   },
-  { value: "keyword_match", label: "Keyword Match", hint: "Message contains specific keyword(s)" },
-  { value: "new_contact_created", label: "New Contact Created", hint: "When a contact is auto-created from an incoming message" },
-  { value: "conversation_assigned", label: "Conversation Assigned", hint: "When assigned to an agent" },
-  { value: "tag_added", label: "Tag Added", hint: "When a tag is added to a contact" },
-  { value: "time_based", label: "Time-Based", hint: "On a recurring schedule" },
+  { value: "keyword_match", label: "Correspondência de Palavra-chave", hint: "A mensagem contém palavra(s)-chave específica(s)" },
+  { value: "new_contact_created", label: "Novo Contato Criado", hint: "Quando um contato é criado automaticamente a partir de uma mensagem recebida" },
+  { value: "conversation_assigned", label: "Conversa Atribuída", hint: "Quando atribuída a um agente" },
+  { value: "tag_added", label: "Etiqueta Adicionada", hint: "Quando uma etiqueta é adicionada a um contato" },
+  { value: "time_based", label: "Baseado em Horário", hint: "Em uma programação recorrente" },
 ]
 
 function cid(): string {
@@ -266,7 +266,7 @@ function TagSelect({
   if (tags.length === 0) {
     return (
       <Input
-        placeholder="Tag id"
+        placeholder="ID da etiqueta"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="bg-muted text-foreground"
@@ -295,7 +295,7 @@ function TagSelect({
         {/* Preserve a saved tag that's since been deleted so editing an
             existing automation doesn't silently drop it. */}
         {value && !selected && (
-          <option value={value}>{value} (unknown tag)</option>
+          <option value={value}>{value} (etiqueta desconhecida)</option>
         )}
       </select>
     </div>
@@ -336,7 +336,7 @@ function ContactFieldSelect({
         </optgroup>
       )}
       {customValue && !knownCustom && (
-        <option value={customValue}>{customValue} (unknown field)</option>
+        <option value={customValue}>{customValue} (campo desconhecido)</option>
       )}
     </select>
   )
@@ -355,7 +355,7 @@ function AgentSelect({
   if (members.length === 0) {
     return (
       <Input
-        placeholder="Agent id"
+        placeholder="ID do agente"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="bg-muted text-foreground"
@@ -376,7 +376,7 @@ function AgentSelect({
         </option>
       ))}
       {value && !selected && (
-        <option value={value}>{value} (unknown agent)</option>
+        <option value={value}>{value} (agente desconhecido)</option>
       )}
     </select>
   )
@@ -408,7 +408,7 @@ function SendTemplateFields({
             className="bg-muted text-foreground"
           />
         </FieldBlock>
-        <FieldBlock label="Language">
+        <FieldBlock label="Idioma">
           <Input
             value={language}
             onChange={(e) =>
@@ -450,7 +450,7 @@ function SendTemplateFields({
         })}
         {current && !hasMatch && (
           <option value={current}>
-            {templateName} ({language || "unknown"}) — not in approved list
+            {templateName} ({language || "desconhecido"}) — não está na lista de aprovados
           </option>
         )}
       </select>
@@ -531,14 +531,14 @@ export function AutomationBuilder({ initial }: { initial: BuilderInitial }) {
           body?.issues?.[0]
         if (firstIssue?.message) {
           toast.error(firstIssue.message, {
-            description: firstIssue.path ? `at ${firstIssue.path}` : undefined,
+            description: firstIssue.path ? `em ${firstIssue.path}` : undefined,
           })
         } else {
-          toast.error(body?.error ?? "Save failed")
+          toast.error(body?.error ?? "Falha ao salvar")
         }
         return
       }
-      toast.success(isEditing ? "Automation saved" : "Automation created")
+      toast.success(isEditing ? "Automação salva" : "Automação criada")
       if (!isEditing && body?.automation?.id) {
         router.replace(`/automations/${body.automation.id}/edit`)
       }
@@ -572,7 +572,7 @@ export function AutomationBuilder({ initial }: { initial: BuilderInitial }) {
           <Switch
             checked={state.is_active}
             onCheckedChange={(v) => patchTop("is_active", !!v)}
-            aria-label="Active"
+            aria-label="Ativo"
           />
         </div>
         <Button
@@ -581,7 +581,7 @@ export function AutomationBuilder({ initial }: { initial: BuilderInitial }) {
           className="bg-primary text-primary-foreground hover:bg-primary/90"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          {isEditing ? "Save" : "Save Draft"}
+          {isEditing ? "Salvar" : "Salvar Rascunho"}
         </Button>
       </header>
 
@@ -692,7 +692,7 @@ function TriggerCard({
             )}
             {type === "time_based" && (
               <Input
-                placeholder="Cron expression or HH:mm"
+                placeholder="Expressão cron ou HH:mm"
                 value={(config.schedule as string) ?? ""}
                 onChange={(e) =>
                   onConfigChange({ ...config, schedule: e.target.value })
@@ -748,7 +748,7 @@ function KeywordMatchConfig({
               commit()
             }
           }}
-          placeholder="e.g. pricing, demo request, talk to sales"
+          placeholder="ex.: preço, agendar demo, falar com vendas"
           className="bg-muted text-foreground"
         />
       </div>
@@ -761,8 +761,8 @@ function KeywordMatchConfig({
           onChange={(e) => onChange({ ...config, match_type: e.target.value as "exact" | "contains" })}
           className="w-full rounded-md border border-border bg-muted px-2 py-1.5 text-sm text-foreground focus:outline-none"
         >
-          <option value="contains">Contains</option>
-          <option value="exact">Exact</option>
+          <option value="contains">Contém</option>
+          <option value="exact">Exato</option>
         </select>
       </div>
     </div>
@@ -873,7 +873,7 @@ function StepRenderer({
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                {isCondition ? "Condition" : step.step_type === "wait" ? "Wait" : "Action"}
+                {isCondition ? "Condição" : step.step_type === "wait" ? "Aguardar" : "Ação"}
               </div>
               <div className="truncate text-sm font-medium text-foreground">{meta.label}</div>
               <div className="truncate text-[11px] text-muted-foreground">{previewFor(step)}</div>
@@ -965,10 +965,10 @@ function ConditionBranches({
     // cram each branch to ~170px which is too narrow for the nested
     // cards. Two-column grid returns on sm+.
     <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <BranchColumn label="Yes" color="text-primary">
+      <BranchColumn label="Sim" color="text-primary">
         <StepList {...props} steps={yes} parentPath={yesPath} />
       </BranchColumn>
-      <BranchColumn label="No" color="text-rose-400">
+      <BranchColumn label="Não" color="text-rose-400">
         <StepList {...props} steps={no} parentPath={noPath} />
       </BranchColumn>
     </div>
@@ -1045,7 +1045,7 @@ function StepEditor({
           <Textarea
             value={(cfg.text as string) ?? ""}
             onChange={(e) => set({ text: e.target.value })}
-            placeholder="Hi! Thanks for reaching out…"
+            placeholder="Oi! Obrigado por entrar em contato…"
             className="min-h-24 bg-muted text-foreground"
           />
         </FieldBlock>
@@ -1071,7 +1071,7 @@ function StepEditor({
     case "assign_conversation":
       return (
         <>
-          <FieldBlock label="Mode">
+          <FieldBlock label="Modo">
             <select
               value={(cfg.mode as string) ?? "round_robin"}
               onChange={(e) => set({ mode: e.target.value })}
@@ -1082,7 +1082,7 @@ function StepEditor({
             </select>
           </FieldBlock>
           {cfg.mode === "specific" && (
-            <FieldBlock label="Agent">
+            <FieldBlock label="Agente">
               <AgentSelect
                 value={(cfg.agent_id as string) ?? ""}
                 onChange={(v) => set({ agent_id: v })}
@@ -1094,17 +1094,17 @@ function StepEditor({
     case "update_contact_field":
       return (
         <>
-          <FieldBlock label="Field">
+          <FieldBlock label="Campo">
             <ContactFieldSelect
               value={(cfg.field as string) ?? "name"}
               onChange={(v) => set({ field: v })}
             />
           </FieldBlock>
-          <FieldBlock label="Value">
+          <FieldBlock label="Valor">
             <Input
               value={(cfg.value as string) ?? ""}
               onChange={(e) => set({ value: e.target.value })}
-              placeholder="Text or {{ vars.x }} / {{ message.text }}"
+              placeholder="Texto ou {{ vars.x }} / {{ message.text }}"
               className="bg-muted text-foreground"
             />
           </FieldBlock>
@@ -1113,28 +1113,28 @@ function StepEditor({
     case "create_deal":
       return (
         <>
-          <FieldBlock label="Pipeline id">
+          <FieldBlock label="ID do funil">
             <Input
               value={(cfg.pipeline_id as string) ?? ""}
               onChange={(e) => set({ pipeline_id: e.target.value })}
               className="bg-muted text-foreground"
             />
           </FieldBlock>
-          <FieldBlock label="Stage id">
+          <FieldBlock label="ID da etapa">
             <Input
               value={(cfg.stage_id as string) ?? ""}
               onChange={(e) => set({ stage_id: e.target.value })}
               className="bg-muted text-foreground"
             />
           </FieldBlock>
-          <FieldBlock label="Title">
+          <FieldBlock label="Título">
             <Input
               value={(cfg.title as string) ?? ""}
               onChange={(e) => set({ title: e.target.value })}
               className="bg-muted text-foreground"
             />
           </FieldBlock>
-          <FieldBlock label="Value">
+          <FieldBlock label="Valor">
             <Input
               type="number"
               value={(cfg.value as number) ?? 0}
@@ -1147,7 +1147,7 @@ function StepEditor({
     case "wait":
       return (
         <div className="grid grid-cols-2 gap-2">
-          <FieldBlock label="Amount">
+          <FieldBlock label="Quantidade">
             <Input
               type="number"
               min={1}
@@ -1156,7 +1156,7 @@ function StepEditor({
               className="bg-muted text-foreground"
             />
           </FieldBlock>
-          <FieldBlock label="Unit">
+          <FieldBlock label="Unidade">
             <select
               value={(cfg.unit as string) ?? "hours"}
               onChange={(e) => set({ unit: e.target.value })}
@@ -1172,7 +1172,7 @@ function StepEditor({
     case "condition":
       return (
         <>
-          <FieldBlock label="Subject">
+          <FieldBlock label="Assunto">
             <select
               value={(cfg.subject as string) ?? "tag_presence"}
               onChange={(e) => set({ subject: e.target.value })}
@@ -1184,7 +1184,7 @@ function StepEditor({
               <option value="time_of_day">Hora do dia</option>
             </select>
           </FieldBlock>
-          <FieldBlock label="Operand">
+          <FieldBlock label="Operando">
             <Input
               placeholder={
                 cfg.subject === "time_of_day"
@@ -1192,7 +1192,7 @@ function StepEditor({
                   : cfg.subject === "contact_field"
                   ? "name / email / company"
                   : cfg.subject === "tag_presence"
-                  ? "tag id"
+                  ? "id da etiqueta"
                   : ""
               }
               value={(cfg.operand as string) ?? ""}
@@ -1201,7 +1201,7 @@ function StepEditor({
             />
           </FieldBlock>
           {(cfg.subject === "contact_field" || cfg.subject === "message_content") && (
-            <FieldBlock label="Value">
+            <FieldBlock label="Valor">
               <Input
                 value={(cfg.value as string) ?? ""}
                 onChange={(e) => set({ value: e.target.value })}
@@ -1259,15 +1259,15 @@ function FieldBlock({
 function previewFor(step: BuilderStep): string {
   switch (step.step_type) {
     case "send_message":
-      return (step.step_config.text as string) || "no text yet"
+      return (step.step_config.text as string) || "sem texto ainda"
     case "send_template":
-      return (step.step_config.template_name as string) || "pick a template"
+      return (step.step_config.template_name as string) || "escolha um modelo"
     case "wait":
       return `${step.step_config.amount ?? "?"} ${step.step_config.unit ?? ""}`
     case "condition":
-      return `when ${step.step_config.subject ?? "?"}`
+      return `quando ${step.step_config.subject ?? "?"}`
     case "send_webhook":
-      return (step.step_config.url as string) || "no url"
+      return (step.step_config.url as string) || "sem url"
     default:
       return ""
   }
