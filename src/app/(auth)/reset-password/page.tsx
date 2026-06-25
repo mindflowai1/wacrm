@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { EmailOtpType } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,39 +21,47 @@ import { MessageSquare, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
 // rule is the same wherever a password is set.
 const MIN_PASSWORD = 8;
 
+/**
+ * Password-reset landing page.
+ *
+ * Deliberately pre-fetch-proof: the recovery email links straight here
+ * with `?token_hash=…&type=recovery` (set in the Supabase "Reset
+ * Password" email template), and we DON'T touch the token on load. The
+ * one-time token is read from the URL and spent only on form submit —
+ * `verifyOtp` opens the recovery session, then `updateUser` sets the
+ * new password.
+ *
+ * Why not the older `?code=` + `/auth/callback` exchange: Gmail and
+ * other mail scanners pre-open links to check them, which consumed the
+ * single-use code before the user ever clicked (the `auth_expired`
+ * bounce). A scanner can't submit a form, so deferring consumption to
+ * submit fixes it. `verifyOtp` with a token_hash also needs no PKCE
+ * verifier cookie, so the link works from any browser or device.
+ */
 export default function ResetPasswordPage() {
   const router = useRouter();
   const supabase = createClient();
 
-  // undefined = still checking; true = recovery session present;
-  // false = no session (link opened directly / expired).
-  const [ready, setReady] = useState<boolean | undefined>(undefined);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // /auth/callback already exchanged the recovery code for a session
-  // before redirecting here. We confirm it's really present so we don't
-  // show the form to someone who hit this URL without a valid link.
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!cancelled) setReady(!!user);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [supabase]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
+    // Read the one-time token from the URL at submit time (never on
+    // load) so a link pre-opened by a mail scanner doesn't burn it.
+    const params = new URLSearchParams(window.location.search);
+    const tokenHash = params.get("token_hash");
+    const otpType = (params.get("type") as EmailOtpType) || "recovery";
+
+    if (!tokenHash) {
+      setError("Link inválido. Solicite um novo link de redefinição.");
+      return;
+    }
     if (password.length < MIN_PASSWORD) {
       setError(`A senha deve ter pelo menos ${MIN_PASSWORD} caracteres`);
       return;
@@ -63,55 +72,32 @@ export default function ResetPasswordPage() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
-    if (error) {
-      setError(error.message);
+
+    // Spend the token now (not on page load) to open the recovery
+    // session.
+    const { error: otpError } = await supabase.auth.verifyOtp({
+      type: otpType,
+      token_hash: tokenHash,
+    });
+    if (otpError) {
+      setError(
+        "Este link expirou ou já foi usado. Solicite um novo link de redefinição.",
+      );
       setLoading(false);
       return;
     }
+
+    const { error: updateError } = await supabase.auth.updateUser({ password });
+    if (updateError) {
+      setError(updateError.message);
+      setLoading(false);
+      return;
+    }
+
     setSuccess(true);
     setLoading(false);
-    // Brief pause so the success state registers, then into the app.
     setTimeout(() => router.replace("/dashboard"), 1500);
   };
-
-  // ----- Checking the recovery session -----
-  if (ready === undefined) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // ----- No valid recovery session -----
-  if (!ready) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <Card className="w-full max-w-md border-border bg-card">
-          <CardHeader className="items-center text-center">
-            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10">
-              <MessageSquare className="h-6 w-6 text-red-400" />
-            </div>
-            <CardTitle className="text-xl text-foreground">
-              Link inválido ou expirado
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Este link de redefinição não é mais válido. Solicite um novo
-              para continuar.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/forgot-password">
-              <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                Solicitar novo link
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   // ----- Password updated -----
   if (success) {
