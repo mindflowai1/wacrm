@@ -28,7 +28,11 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+      // Land straight on the reset page. The browser Supabase client
+      // (detectSessionInUrl) processes the recovery code there, reading
+      // the PKCE verifier from browser storage — which works regardless
+      // of the verifier cookie's SameSite, unlike a server route.
+      redirectTo: `${window.location.origin}/reset-password`,
     });
 
     if (error) {

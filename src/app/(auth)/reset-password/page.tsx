@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { EmailOtpType } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,47 +20,61 @@ import { MessageSquare, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
 // rule is the same wherever a password is set.
 const MIN_PASSWORD = 8;
 
+type Phase = "checking" | "ready" | "invalid" | "success";
+
 /**
  * Password-reset landing page.
  *
- * Deliberately pre-fetch-proof: the recovery email links straight here
- * with `?token_hash=…&type=recovery` (set in the Supabase "Reset
- * Password" email template), and we DON'T touch the token on load. The
- * one-time token is read from the URL and spent only on form submit —
- * `verifyOtp` opens the recovery session, then `updateUser` sets the
- * new password.
- *
- * Why not the older `?code=` + `/auth/callback` exchange: Gmail and
- * other mail scanners pre-open links to check them, which consumed the
- * single-use code before the user ever clicked (the `auth_expired`
- * bounce). A scanner can't submit a form, so deferring consumption to
- * submit fixes it. `verifyOtp` with a token_hash also needs no PKCE
- * verifier cookie, so the link works from any browser or device.
+ * The recovery email (default Supabase template) links here via
+ * `resetPasswordForEmail({ redirectTo: '/reset-password' })`. The
+ * browser Supabase client processes the recovery `?code=` on load
+ * (detectSessionInUrl) using the PKCE verifier from browser storage and
+ * fires a session. We do this on the CLIENT — not a server route —
+ * because the verifier cookie's SameSite can keep it from reaching the
+ * server, which is what made the earlier `/auth/callback` exchange
+ * bounce with `auth_expired`. Client-side JS reads the verifier
+ * regardless, so this just works with no SMTP / template changes.
  */
 export default function ResetPasswordPage() {
   const router = useRouter();
   const supabase = createClient();
 
+  const [phase, setPhase] = useState<Phase>("checking");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    // onAuthStateChange fires INITIAL_SESSION / PASSWORD_RECOVERY once
+    // the URL is processed; getSession covers a session that landed
+    // before the listener attached. All setState here runs in async
+    // callbacks (never synchronously in the effect body).
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) setPhase((p) => (p === "checking" ? "ready" : p));
+    });
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) setPhase((p) => (p === "checking" ? "ready" : p));
+    });
+
+    // No session within a few seconds → the link is bad or already used.
+    const timer = setTimeout(() => {
+      setPhase((p) => (p === "checking" ? "invalid" : p));
+    }, 6000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timer);
+    };
+  }, [supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    // Read the one-time token from the URL at submit time (never on
-    // load) so a link pre-opened by a mail scanner doesn't burn it.
-    const params = new URLSearchParams(window.location.search);
-    const tokenHash = params.get("token_hash");
-    const otpType = (params.get("type") as EmailOtpType) || "recovery";
-
-    if (!tokenHash) {
-      setError("Link inválido. Solicite um novo link de redefinição.");
-      return;
-    }
     if (password.length < MIN_PASSWORD) {
       setError(`A senha deve ter pelo menos ${MIN_PASSWORD} caracteres`);
       return;
@@ -72,21 +85,6 @@ export default function ResetPasswordPage() {
     }
 
     setLoading(true);
-
-    // Spend the token now (not on page load) to open the recovery
-    // session.
-    const { error: otpError } = await supabase.auth.verifyOtp({
-      type: otpType,
-      token_hash: tokenHash,
-    });
-    if (otpError) {
-      setError(
-        "Este link expirou ou já foi usado. Solicite um novo link de redefinição.",
-      );
-      setLoading(false);
-      return;
-    }
-
     const { error: updateError } = await supabase.auth.updateUser({ password });
     if (updateError) {
       setError(updateError.message);
@@ -94,13 +92,52 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    setSuccess(true);
+    setPhase("success");
     setLoading(false);
     setTimeout(() => router.replace("/dashboard"), 1500);
   };
 
+  // ----- Establishing the recovery session -----
+  if (phase === "checking") {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background px-4">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Validando o link…</p>
+      </div>
+    );
+  }
+
+  // ----- No valid recovery session -----
+  if (phase === "invalid") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <Card className="w-full max-w-md border-border bg-card">
+          <CardHeader className="items-center text-center">
+            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10">
+              <MessageSquare className="h-6 w-6 text-red-400" />
+            </div>
+            <CardTitle className="text-xl text-foreground">
+              Link inválido ou expirado
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Este link de redefinição não é mais válido. Solicite um novo
+              para continuar.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/forgot-password">
+              <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                Solicitar novo link
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // ----- Password updated -----
-  if (success) {
+  if (phase === "success") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <Card className="w-full max-w-md border-border bg-card">
@@ -120,7 +157,7 @@ export default function ResetPasswordPage() {
     );
   }
 
-  // ----- Form -----
+  // ----- Form (phase === "ready") -----
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md border-border bg-card">
