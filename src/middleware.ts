@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { isAccountEntitled } from '@/lib/stripe/subscription'
+import { isPlatformAdminEmail } from '@/lib/auth/platform-admin'
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -54,10 +55,25 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protected pages - redirect to login if not authenticated
-  const protectedPaths = ['/dashboard', '/inbox', '/contacts', '/pipelines', '/broadcasts', '/automations', '/settings']
+  const protectedPaths = ['/dashboard', '/inbox', '/contacts', '/pipelines', '/broadcasts', '/automations', '/settings', '/admin']
   if (!user && protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
+
+  // Platform-admin area — cross-tenant "god mode", gated to the
+  // PLATFORM_ADMIN_EMAILS allow-list. An authenticated but non-admin
+  // user is bounced to their dashboard. (The /api/admin/* routes also
+  // re-check server-side, so this is the outer of two gates.)
+  if (
+    user &&
+    request.nextUrl.pathname.startsWith('/admin') &&
+    !isPlatformAdminEmail(user.email)
+  ) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    url.search = ''
     return NextResponse.redirect(url)
   }
 
