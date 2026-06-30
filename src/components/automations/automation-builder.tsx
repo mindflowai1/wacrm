@@ -176,11 +176,19 @@ function blankConfig(type: AutomationStepType): Record<string, unknown> {
 // an older deployment), so an automation is always authorable.
 // ------------------------------------------------------------
 
+/** A pipeline plus its ordered stages, for the create-deal pickers. */
+interface PipelineWithStages {
+  id: string
+  name: string
+  stages: { id: string; name: string }[]
+}
+
 interface AutomationResources {
   tags: TagRecord[]
   members: AccountMember[]
   templates: MessageTemplate[]
   customFields: CustomField[]
+  pipelines: PipelineWithStages[]
 }
 
 const ResourcesContext = createContext<AutomationResources>({
@@ -188,6 +196,7 @@ const ResourcesContext = createContext<AutomationResources>({
   members: [],
   templates: [],
   customFields: [],
+  pipelines: [],
 })
 
 function useResources(): AutomationResources {
@@ -199,6 +208,7 @@ function ResourcesProvider({ children }: { children: ReactNode }) {
   const [members, setMembers] = useState<AccountMember[]>([])
   const [templates, setTemplates] = useState<MessageTemplate[]>([])
   const [customFields, setCustomFields] = useState<CustomField[]>([])
+  const [pipelines, setPipelines] = useState<PipelineWithStages[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -209,19 +219,41 @@ function ResourcesProvider({ children }: { children: ReactNode }) {
     // actually be sent (anything else 400s at send time), matching the
     // broadcast picker.
     void (async () => {
-      const [tagsRes, templatesRes, customFieldsRes] = await Promise.all([
-        supabase.from("tags").select("*").order("name"),
-        supabase
-          .from("message_templates")
-          .select("*")
-          .eq("status", "APPROVED")
-          .order("name"),
-        supabase.from("custom_fields").select("*").order("field_name"),
-      ])
+      const [tagsRes, templatesRes, customFieldsRes, pipelinesRes] =
+        await Promise.all([
+          supabase.from("tags").select("*").order("name"),
+          supabase
+            .from("message_templates")
+            .select("*")
+            .eq("status", "APPROVED")
+            .order("name"),
+          supabase.from("custom_fields").select("*").order("field_name"),
+          supabase
+            .from("pipelines")
+            .select("id, name, pipeline_stages(id, name, position)")
+            .order("name"),
+        ])
       if (cancelled) return
       setTags((tagsRes.data as TagRecord[] | null) ?? [])
       setTemplates((templatesRes.data as MessageTemplate[] | null) ?? [])
       setCustomFields((customFieldsRes.data as CustomField[] | null) ?? [])
+
+      type RawStage = { id: string; name: string; position: number | null }
+      type RawPipeline = {
+        id: string
+        name: string
+        pipeline_stages: RawStage[] | null
+      }
+      setPipelines(
+        ((pipelinesRes.data as RawPipeline[] | null) ?? []).map((p) => ({
+          id: p.id,
+          name: p.name,
+          stages: (p.pipeline_stages ?? [])
+            .slice()
+            .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+            .map((s) => ({ id: s.id, name: s.name })),
+        })),
+      )
     })()
 
     // Members go through the API so we inherit its email-visibility
@@ -244,7 +276,9 @@ function ResourcesProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <ResourcesContext.Provider value={{ tags, members, templates, customFields }}>
+    <ResourcesContext.Provider
+      value={{ tags, members, templates, customFields, pipelines }}
+    >
       {children}
     </ResourcesContext.Provider>
   )
@@ -296,6 +330,102 @@ function TagSelect({
             existing automation doesn't silently drop it. */}
         {value && !selected && (
           <option value={value}>{value} (etiqueta desconhecida)</option>
+        )}
+      </select>
+    </div>
+  )
+}
+
+/** Pipeline + stage pickers for "Create Deal", by name. Stores the raw
+ *  `pipeline_id` / `stage_id` under the hood (engine unchanged) but the
+ *  user never sees a UUID. Picking a pipeline auto-selects its first
+ *  stage so the step is valid in one click. Saved-but-deleted ids are
+ *  preserved as labelled options so editing doesn't silently drop them.
+ *  Falls back to raw inputs when no pipelines exist (fresh account). */
+function PipelineStageSelect({
+  pipelineId,
+  stageId,
+  onChange,
+}: {
+  pipelineId: string
+  stageId: string
+  onChange: (next: { pipeline_id: string; stage_id: string }) => void
+}) {
+  const { pipelines } = useResources()
+
+  if (pipelines.length === 0) {
+    return (
+      <div className="space-y-2">
+        <Input
+          placeholder="ID do funil"
+          value={pipelineId}
+          onChange={(e) =>
+            onChange({ pipeline_id: e.target.value, stage_id: stageId })
+          }
+          className="bg-muted text-foreground"
+        />
+        <Input
+          placeholder="ID da etapa"
+          value={stageId}
+          onChange={(e) =>
+            onChange({ pipeline_id: pipelineId, stage_id: e.target.value })
+          }
+          className="bg-muted text-foreground"
+        />
+        <p className="text-xs text-muted-foreground">
+          Nenhum funil encontrado. Crie um em Funis para escolher pelo nome.
+        </p>
+      </div>
+    )
+  }
+
+  const selectedPipeline = pipelines.find((p) => p.id === pipelineId)
+  const stages = selectedPipeline?.stages ?? []
+  const selectedStage = stages.find((s) => s.id === stageId)
+
+  return (
+    <div className="space-y-2">
+      <select
+        value={pipelineId}
+        onChange={(e) => {
+          const p = pipelines.find((x) => x.id === e.target.value)
+          onChange({
+            pipeline_id: e.target.value,
+            // Auto-pick the first stage of the chosen pipeline.
+            stage_id: p?.stages[0]?.id ?? "",
+          })
+        }}
+        className={SELECT_CLASS}
+      >
+        <option value="">Selecione um funil…</option>
+        {pipelines.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.name}
+          </option>
+        ))}
+        {pipelineId && !selectedPipeline && (
+          <option value={pipelineId}>{pipelineId} (funil desconhecido)</option>
+        )}
+      </select>
+
+      <select
+        value={stageId}
+        disabled={!selectedPipeline}
+        onChange={(e) =>
+          onChange({ pipeline_id: pipelineId, stage_id: e.target.value })
+        }
+        className={SELECT_CLASS}
+      >
+        <option value="">
+          {selectedPipeline ? "Selecione uma etapa…" : "Escolha o funil primeiro"}
+        </option>
+        {stages.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.name}
+          </option>
+        ))}
+        {stageId && selectedPipeline && !selectedStage && (
+          <option value={stageId}>{stageId} (etapa desconhecida)</option>
         )}
       </select>
     </div>
@@ -1113,30 +1243,25 @@ function StepEditor({
     case "create_deal":
       return (
         <>
-          <FieldBlock label="ID do funil">
-            <Input
-              value={(cfg.pipeline_id as string) ?? ""}
-              onChange={(e) => set({ pipeline_id: e.target.value })}
-              className="bg-muted text-foreground"
-            />
-          </FieldBlock>
-          <FieldBlock label="ID da etapa">
-            <Input
-              value={(cfg.stage_id as string) ?? ""}
-              onChange={(e) => set({ stage_id: e.target.value })}
-              className="bg-muted text-foreground"
+          <FieldBlock label="Funil e etapa">
+            <PipelineStageSelect
+              pipelineId={(cfg.pipeline_id as string) ?? ""}
+              stageId={(cfg.stage_id as string) ?? ""}
+              onChange={(next) => set(next)}
             />
           </FieldBlock>
           <FieldBlock label="Título">
             <Input
               value={(cfg.title as string) ?? ""}
               onChange={(e) => set({ title: e.target.value })}
+              placeholder="ex.: {{ contact.name }}"
               className="bg-muted text-foreground"
             />
           </FieldBlock>
-          <FieldBlock label="Valor">
+          <FieldBlock label="Valor (opcional)">
             <Input
               type="number"
+              min={0}
               value={(cfg.value as number) ?? 0}
               onChange={(e) => set({ value: Number(e.target.value) })}
               className="bg-muted text-foreground"
